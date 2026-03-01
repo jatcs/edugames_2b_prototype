@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fact Fortifier</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Courier New', monospace;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  h1 {
+    font-size: 2rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #f0c040;
+    padding: 18px 0 4px;
+  }
+  .subtitle { font-size: 0.75rem; color: #888; letter-spacing: 2px; margin-bottom: 10px; }
+
+  /* ── PHASE BANNER ── */
+  #phase-banner {
+    width: 100%;
+    max-width: 900px;
+    text-align: center;
+    padding: 8px;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    font-weight: bold;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    transition: background 0.3s;
+  }
+  .phase-build  { background: #1e3a5f; color: #7ec8e3; }
+  .phase-attack { background: #3a1e1e; color: #e37e7e; }
+  .phase-defend { background: #1e3a20; color: #7ee38a; }
+
+  /* ── MAIN LAYOUT ── */
+  #game-area {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+    max-width: 900px;
+    align-items: flex-start;
+  }
+
+  /* ── PLAYER PANELS ── */
+  .player-panel {
+    flex: 1;
+    background: #16213e;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .player-panel.active-player { border-color: #f0c040; }
+
+  .player-label {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 6px;
+  }
+  .player-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  #p1-name { color: #7ec8e3; }
+  #p2-name { color: #e37e7e; }
+
+  /* ── TOWER ── */
+  .tower-label {
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .tower {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 4px;
+    min-height: 180px;
+    background: #0d0d1a;
+    border: 1px solid #2a2a4a;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 10px;
+  }
+  .block {
+    padding: 6px 8px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    line-height: 1.3;
+    border-left: 3px solid transparent;
+    position: relative;
+    transition: opacity 0.3s;
+  }
+  .block.solid   { background: #1a3a1a; border-left-color: #4caf50; color: #a5d6a7; }
+  .block.cracked { background: #3a2a1a; border-left-color: #ff9800; color: #ffcc80; }
+  .block.empty-slot {
+    background: #111122;
+    border: 1px dashed #2a2a4a;
+    color: #333;
+    font-size: 0.65rem;
+    text-align: center;
+    padding: 10px;
+  }
+  .block .block-label {
+    font-size: 0.6rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ── RECLAIM PILE ── */
+  .reclaim-label {
+    font-size: 0.65rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .reclaim-pile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-height: 28px;
+    background: #0d0d1a;
+    border: 1px solid #2a2a3a;
+    border-radius: 4px;
+    padding: 4px;
+    margin-bottom: 8px;
+  }
+  .reclaim-block {
+    background: #2a1a1a;
+    border: 1px solid #5a3a3a;
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-size: 0.6rem;
+    color: #e07070;
+    cursor: default;
+  }
+
+  /* ── KNOWLEDGE UNLOCKS ── */
+  .unlocks-area {
+    font-size: 0.65rem;
+    color: #aaa;
+    line-height: 1.5;
+  }
+  .unlock-entry { margin-bottom: 4px; }
+  .unlock-pattern { color: #f0c040; }
+  .unlock-name { color: #a0e0a0; }
+
+  /* ── CENTER COLUMN ── */
+  #center-col {
+    width: 280px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ── CARD AREA ── */
+  #card-area {
+    background: #16213e;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 12px;
+  }
+  #card-area h3 {
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 8px;
+  }
+  #current-card {
+    background: #0d0d1a;
+    border: 1px solid #3a3a5a;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    min-height: 80px;
+    color: #ddd;
+    margin-bottom: 10px;
+  }
+
+  /* ── LABEL BUTTONS ── */
+  #label-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .label-btn {
+    padding: 8px 10px;
+    border: 1px solid;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    text-align: left;
+  }
+  .label-btn:hover { opacity: 0.8; transform: translateX(2px); }
+  .label-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+  .btn-eitheror { background: #1a1a3a; border-color: #5a5aaa; color: #9999dd; }
+  .btn-slippery { background: #1a2a1a; border-color: #5aaa5a; color: #99dd99; }
+  .btn-valid    { background: #2a2a1a; border-color: #aaaa5a; color: #dddd99; }
+
+  /* ── ACTION BUTTONS ── */
+  #action-area {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .action-btn {
+    padding: 9px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .action-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .action-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+  .btn-primary  { background: #f0c040; color: #1a1a00; }
+  .btn-attack   { background: #c0404040; border: 1px solid #e05050; color: #e07070; }
+  .btn-reclaim  { background: #40406040; border: 1px solid #6060a0; color: #8080cc; }
+  .btn-endturn  { background: #40404040; border: 1px solid #666; color: #aaa; }
+
+  /* ── HAND ── */
+  #hand-area {
+    background: #16213e;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 10px;
+  }
+  #hand-area h3 {
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 8px;
+  }
+  .hand-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .hand-card {
+    background: #0d0d1a;
+    border: 1px solid #3a3a5a;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 0.7rem;
+    color: #ccc;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+  .hand-card:hover { border-color: #7070aa; background: #1a1a30; }
+  .hand-card.selected { border-color: #f0c040; background: #2a2a10; color: #f0c040; }
+  .hand-card.disabled { opacity: 0.4; cursor: not-allowed; }
+  .hand-card-type {
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #666;
+    margin-bottom: 2px;
+  }
+
+  /* ── FEEDBACK ── */
+  #feedback-box {
+    background: #16213e;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    min-height: 50px;
+    line-height: 1.5;
+  }
+  #feedback-box.correct { border-color: #4caf50; color: #a5d6a7; }
+  #feedback-box.incorrect { border-color: #e05050; color: #e07070; }
+  #feedback-box.neutral { border-color: #2a2a4a; color: #888; }
+  #feedback-box.unlock { border-color: #f0c040; color: #f0c040; }
+
+  /* ── LOG ── */
+  #log-area {
+    background: #16213e;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 8px 10px;
+    max-height: 90px;
+    overflow-y: auto;
+  }
+  #log-area h3 {
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 4px;
+  }
+  .log-entry { font-size: 0.65rem; color: #555; margin-bottom: 2px; }
+
+  /* ── WIN SCREEN ── */
+  #win-screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  #win-screen.visible { display: flex; }
+  #win-box {
+    background: #16213e;
+    border: 2px solid #f0c040;
+    border-radius: 12px;
+    padding: 40px 50px;
+    text-align: center;
+  }
+  #win-box h2 { font-size: 2rem; color: #f0c040; margin-bottom: 10px; }
+  #win-box p  { color: #aaa; margin-bottom: 20px; font-size: 0.85rem; }
+  #win-box button {
+    padding: 10px 24px;
+    background: #f0c040;
+    color: #1a1a00;
+    border: none;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── TURN TRANSITION OVERLAY ── */
+  #turn-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+  #turn-overlay.visible { display: flex; }
+  #turn-box {
+    background: #16213e;
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 30px 40px;
+    text-align: center;
+  }
+  #turn-box h2 { font-size: 1.4rem; color: #f0c040; margin-bottom: 8px; }
+  #turn-box p  { color: #888; font-size: 0.8rem; margin-bottom: 20px; }
+  #turn-box button {
+    padding: 10px 24px;
+    background: #f0c040;
+    color: #1a1a00;
+    border: none;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+
+  .score-row { display: flex; justify-content: space-between; font-size: 0.65rem; color: #666; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<h1>⚔ Fact Fortifier</h1>
+<div class="subtitle">identify fallacies · build your tower · defend your reasoning</div>
+
+<div id="phase-banner" class="phase-build">— — —</div>
+
+<div id="game-area">
+
+  <!-- PLAYER 1 PANEL -->
+  <div class="player-panel" id="p1-panel">
+    <div class="player-label">Player 1</div>
+    <div class="player-name" id="p1-name">Builder</div>
+    <div class="score-row">
+      <span>Correct labels: <span id="p1-correct">0</span></span>
+      <span>Tower: <span id="p1-solid">0</span>/6</span>
+    </div>
+    <div class="tower-label">Tower</div>
+    <div class="tower" id="p1-tower"></div>
+    <div class="reclaim-label">Reclaim pile (<span id="p1-reclaim-count">0</span>)</div>
+    <div class="reclaim-pile" id="p1-reclaim"></div>
+    <div class="unlocks-area" id="p1-unlocks"></div>
+  </div>
+
+  <!-- CENTER COLUMN -->
+  <div id="center-col">
+
+    <div id="card-area">
+      <h3>Current Argument</h3>
+      <div id="current-card">Draw a card to begin your turn.</div>
+      <div id="label-buttons">
+        <button class="label-btn btn-eitheror" onclick="labelCard('either-or')" disabled>Either/Or Fallacy</button>
+        <button class="label-btn btn-slippery" onclick="labelCard('slippery-slope')" disabled>Slippery Slope Fallacy</button>
+        <button class="label-btn btn-valid"    onclick="labelCard('valid')" disabled>Valid Argument</button>
+      </div>
+    </div>
+
+    <div id="action-area">
+      <button class="action-btn btn-primary" id="draw-btn" onclick="drawCard()">Draw Card</button>
+      <button class="action-btn btn-attack"  id="attack-btn" onclick="startAttack()" disabled>Fire Cannon 🔥</button>
+      <button class="action-btn btn-reclaim" id="reclaim-btn" onclick="startReclaim()" disabled>Reclaim Block ↩</button>
+      <button class="action-btn btn-endturn" id="endturn-btn" onclick="endTurn()">End Turn →</button>
+    </div>
+
+    <div id="hand-area">
+      <h3>Hand (<span id="hand-count">0</span> cards)</h3>
+      <div class="hand-cards" id="hand-cards"></div>
+    </div>
+
+    <div id="feedback-box" class="neutral">Waiting for action…</div>
+    <div id="log-area"><h3>Log</h3><div id="log-entries"></div></div>
+
+  </div>
+
+  <!-- PLAYER 2 PANEL -->
+  <div class="player-panel" id="p2-panel">
+    <div class="player-label">Player 2</div>
+    <div class="player-name" id="p2-name">Attacker</div>
+    <div class="score-row">
+      <span>Correct labels: <span id="p2-correct">0</span></span>
+      <span>Tower: <span id="p2-solid">0</span>/6</span>
+    </div>
+    <div class="tower-label">Tower</div>
+    <div class="tower" id="p2-tower"></div>
+    <div class="reclaim-label">Reclaim pile (<span id="p2-reclaim-count">0</span>)</div>
+    <div class="reclaim-pile" id="p2-reclaim"></div>
+    <div class="unlocks-area" id="p2-unlocks"></div>
+  </div>
+
+</div>
+
+<!-- TURN TRANSITION OVERLAY -->
+<div id="turn-overlay">
+  <div id="turn-box">
+    <h2 id="turn-overlay-title">Pass the device</h2>
+    <p id="turn-overlay-body">Player 2 — it's your turn.</p>
+    <button onclick="dismissOverlay()">I'm Ready →</button>
+  </div>
+</div>
+
+<!-- WIN SCREEN -->
+<div id="win-screen">
+  <div id="win-box">
+    <h2 id="win-title">🏰 Victory!</h2>
+    <p id="win-body"></p>
+    <button onclick="resetGame()">Play Again</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+// ═══════════════════════════════════════════════
+// CARD DATA — argument cards with fallacy types
+// ═══════════════════════════════════════════════
+
+const CARDS = [
+  // EITHER/OR FALLACIES
+  { id: 1, type: 'either-or', text: "You're either with our team on this project approach, or you're against the whole project. There's no middle ground here." },
+  { id: 2, type: 'either-or', text: "We can either spend the whole budget on user research or skip it entirely. We don't have time for anything in between." },
+  { id: 3, type: 'either-or', text: "Either we go with my design or we'll end up with a terrible product. Those are the only two possible outcomes." },
+  { id: 4, type: 'either-or', text: "If you don't agree with everything in the proposal, you must want the project to fail." },
+  { id: 5, type: 'either-or', text: "We either launch on the original date or this whole collaboration was a waste of everyone's time." },
+  { id: 6, type: 'either-or', text: "You can either do it my way or step aside and let someone else lead. There's no room for compromise." },
+  { id: 7, type: 'either-or', text: "This project will either be a huge success or a complete disaster — there's no in-between." },
+
+  // SLIPPERY SLOPE FALLACIES
+  { id: 8, type: 'slippery-slope', text: "If we let one team member miss a deadline, soon everyone will start skipping deadlines and the whole project will fall apart." },
+  { id: 9, type: 'slippery-slope', text: "If we change our research question now, we'll end up changing everything about the project, and we'll never finish at all." },
+  { id: 10, type: 'slippery-slope', text: "If we allow any group member to work remotely, eventually no one will want to meet in person and we'll lose all team cohesion." },
+  { id: 11, type: 'slippery-slope', text: "Once we start accepting feedback from outside the team, we'll lose control of our vision and the project will become unrecognizable." },
+  { id: 12, type: 'slippery-slope', text: "If the professor allows us to change our topic once, every group will change their topic constantly and nothing will ever get done." },
+  { id: 13, type: 'slippery-slope', text: "If I give you credit for this idea, you'll start claiming credit for everything, and eventually the whole team will resent you." },
+  { id: 14, type: 'slippery-slope', text: "If we use one graph we didn't make ourselves, we'll start using all borrowed materials and the work won't really be ours." },
+
+  // VALID ARGUMENTS
+  { id: 15, type: 'valid', text: "We should divide the workload based on each person's strengths, so we can produce the best possible outcome within our timeline." },
+  { id: 16, type: 'valid', text: "Since two team members have overlapping schedules, they should handle the parts of the project that require close collaboration." },
+  { id: 17, type: 'valid', text: "We've run out of time to conduct primary research, so we'll need to rely on secondary sources for this section." },
+  { id: 18, type: 'valid', text: "Based on feedback from the first draft, we should simplify our argument structure to improve clarity." },
+  { id: 19, type: 'valid', text: "Including a literature review will strengthen our project by showing awareness of existing work in the field." },
+  { id: 20, type: 'valid', text: "If we can't reach consensus today, we should table the decision and return to it once everyone has reviewed the materials." },
+  { id: 21, type: 'valid', text: "Splitting into two subgroups for this phase will allow us to work in parallel and save time overall." },
+  { id: 22, type: 'valid', text: "Our argument is stronger when we acknowledge counterarguments rather than ignoring them." },
+];
+
+// ═══════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════
+
+const TOWER_SLOTS = 6;
+
+let state = {};
+
+function initState() {
+  state = {
+    currentPlayer: 1,   // 1 or 2
+    phase: 'build',     // 'build' | 'attack' | 'defend' | 'reclaim'
+    round: 1,
+
+    deck: shuffle([...CARDS]),
+    currentCard: null,
+    selectedHandCard: null,
+    attackCard: null,    // card being fired
+
+    players: {
+      1: {
+        name: 'Player 1',
+        tower: [],          // array of {card, label, solid}
+        reclaim: [],        // array of cards
+        hand: [],
+        correctCount: { 'either-or': 0, 'slippery-slope': 0, 'valid': 0 },
+        totalCorrect: 0,
+        unlocks: { pattern3: false, name5: false }
+      },
+      2: {
+        name: 'Player 2',
+        tower: [],
+        reclaim: [],
+        hand: [],
+        correctCount: { 'either-or': 0, 'slippery-slope': 0, 'valid': 0 },
+        totalCorrect: 0,
+        unlocks: { pattern3: false, name5: false }
+      }
+    },
+
+    drawnThisTurn: false,
+    actedThisTurn: false,
+    turnPhaseStep: 'idle',  // 'idle' | 'labeled' | 'attacked' | 'reclaimed'
+    log: []
+  };
+
+  // Deal 3 cards to each player
+  for (let i = 0; i < 3; i++) {
+    dealToHand(1);
+    dealToHand(2);
+  }
+}
+
+function dealToHand(player) {
+  if (state.deck.length === 0) reshuffleDeck();
+  const card = state.deck.pop();
+  state.players[player].hand.push(card);
+}
+
+function reshuffleDeck() {
+  state.deck = shuffle([...CARDS]);
+  addLog('Deck reshuffled.');
+}
+
+// ═══════════════════════════════════════════════
+// GAME ACTIONS
+// ═══════════════════════════════════════════════
+
+function drawCard() {
+  if (state.drawnThisTurn) { setFeedback('You already drew a card this turn.', 'neutral'); return; }
+  if (state.phase !== 'build') { setFeedback('You can only draw during the build phase.', 'neutral'); return; }
+  if (state.deck.length === 0) reshuffleDeck();
+  state.currentCard = state.deck.pop();
+  state.drawnThisTurn = true;
+
+  document.getElementById('current-card').textContent = state.currentCard.text;
+  setLabelButtonsEnabled(true);
+  document.getElementById('draw-btn').disabled = true;
+  setFeedback('Read the argument above. Label it with the correct fallacy type — or mark it as valid.', 'neutral');
+  renderAll();
+}
+
+function startAttack() {
+  if (state.players[state.currentPlayer].hand.length === 0) {
+    setFeedback('No cards in hand to fire!', 'neutral'); return;
+  }
+  const opponent = state.currentPlayer === 1 ? 2 : 1;
+  if (state.players[opponent].tower.filter(b => b.solid).length === 0 &&
+      state.players[opponent].tower.filter(b => !b.solid).length === 0) {
+    setFeedback("Opponent's tower is empty — nothing to attack.", 'neutral'); return;
+  }
+
+  state.phase = 'attack';
+  setFeedback('Select a card from your hand to fire as a cannonball. Choose a fallacious argument to attack with!', 'neutral');
+  renderAll();
+  updatePhaseBanner();
+}
+
+function selectHandCard(index) {
+  if (state.phase === 'attack') {
+    // Fire the card
+    const card = state.players[state.currentPlayer].hand[index];
+    if (card.type === 'valid') {
+      setFeedback('You can only fire fallacious arguments as cannonballs! Select an either/or or slippery slope card.', 'incorrect');
+      return;
+    }
+    state.attackCard = card;
+    state.players[state.currentPlayer].hand.splice(index, 1);
+    state.phase = 'defend';
+
+    addLog(`P${state.currentPlayer} fires: "${card.text.slice(0,40)}…"`);
+    setFeedback(`⚡ Incoming attack! P${state.currentPlayer} fired a fallacy cannon. P${3 - state.currentPlayer}: play a VALID argument from your hand to block it!`, 'neutral');
+    renderAll();
+    updatePhaseBanner();
+
+  } else if (state.phase === 'defend') {
+    // Counter the attack
+    const opponent = state.currentPlayer === 1 ? 2 : 1;
+    const card = state.players[opponent].hand[index];
+    if (card.type !== 'valid') {
+      setFeedback('You must counter with a VALID argument card, not a fallacy!', 'incorrect');
+      return;
+    }
+    // Successful defense
+    state.players[opponent].hand.splice(index, 1);
+    state.attackCard = null;
+    state.phase = 'build';
+    addLog(`P${opponent} successfully defended with "${card.text.slice(0,40)}…"`);
+    setFeedback(`🛡 Defended! P${opponent} countered the fallacy with a valid argument. No blocks were damaged.`, 'correct');
+    dealToHand(opponent);  // Refill hand
+    state.actedThisTurn = true;
+    state.turnPhaseStep = 'attacked';
+    renderAll();
+    updatePhaseBanner();
+
+  } else if (state.phase === 'reclaim') {
+    // Reclaiming a fallen block — player picks a hand card to use
+    state.selectedHandCard = index;
+    renderAll();
+    setFeedback(`Card selected. Now choose a reclaim label for your fallen block.`, 'neutral');
+    setLabelButtonsEnabled(true);
+  }
+}
+
+function resolveDefenseFail() {
+  // Called if defender can't counter (no valid cards in hand)
+  const opponent = state.currentPlayer === 1 ? 2 : 1;
+  // Crack a random solid block, or destroy a cracked one
+  const tower = state.players[opponent].tower;
+  const solidIdx = tower.map((b,i) => b.solid ? i : -1).filter(i => i >= 0);
+  const crackedIdx = tower.map((b,i) => !b.solid ? i : -1).filter(i => i >= 0);
+
+  if (solidIdx.length > 0) {
+    const idx = solidIdx[Math.floor(Math.random() * solidIdx.length)];
+    tower[idx].solid = false;
+    setFeedback(`💥 Hit! P${opponent} couldn't defend — a solid block is now cracked!`, 'incorrect');
+    addLog(`P${opponent}'s tower block cracked by attack.`);
+  } else if (crackedIdx.length > 0) {
+    const idx = crackedIdx[Math.floor(Math.random() * crackedIdx.length)];
+    const removed = tower.splice(idx, 1)[0];
+    state.players[opponent].reclaim.push(removed.card);
+    setFeedback(`💥 Destroyed! A cracked block was obliterated and moved to P${opponent}'s reclaim pile!`, 'incorrect');
+    addLog(`P${opponent}'s cracked block destroyed.`);
+  } else {
+    setFeedback(`💥 The attack hits but the tower is empty!`, 'incorrect');
+  }
+
+  state.attackCard = null;
+  state.phase = 'build';
+  state.actedThisTurn = true;
+  state.turnPhaseStep = 'attacked';
+  renderAll();
+  updatePhaseBanner();
+  checkWin();
+}
+
+function startReclaim() {
+  if (state.players[state.currentPlayer].reclaim.length === 0) {
+    setFeedback('No blocks in reclaim pile.', 'neutral'); return;
+  }
+  state.phase = 'reclaim';
+  state.selectedHandCard = null;
+  setFeedback('Reclaim a fallen block: label it correctly to restore it to your tower.', 'neutral');
+  renderAll();
+  updatePhaseBanner();
+}
+
+function labelCard(chosen) {
+  if (state.phase === 'reclaim') {
+    // Re-labeling a reclaim block
+    const card = state.players[state.currentPlayer].reclaim[0]; // Always reclaim first
+    const correct = (chosen === card.type);
+    if (correct) {
+      state.players[state.currentPlayer].reclaim.shift();
+      state.players[state.currentPlayer].tower.push({ card, label: chosen, solid: true });
+      setFeedback(`✓ Correct! Block reclaimed and restored as solid. ${formatType(card.type)} — nice!`, 'correct');
+      addLog(`P${state.currentPlayer} reclaimed a block correctly.`);
+    } else {
+      setFeedback(`✗ Wrong label. The block stays in the reclaim pile. (It was ${formatType(card.type)})`, 'incorrect');
+      addLog(`P${state.currentPlayer} failed to reclaim a block.`);
+    }
+    state.phase = 'build';
+    state.actedThisTurn = true;
+    state.turnPhaseStep = 'reclaimed';
+    setLabelButtonsEnabled(false);
+    renderAll();
+    updatePhaseBanner();
+    checkWin();
+    return;
+  }
+
+  // Normal build labeling
+  if (!state.currentCard) return;
+  const card = state.currentCard;
+  const correct = (chosen === card.type);
+  const p = state.players[state.currentPlayer];
+
+  if (correct) {
+    p.tower.push({ card, label: chosen, solid: true });
+    p.correctCount[card.type]++;
+    p.totalCorrect++;
+    checkUnlocks(state.currentPlayer);
+    setFeedback(`✓ Correct! This is ${formatType(card.type)}. Solid block added to your tower.`, 'correct');
+    addLog(`P${state.currentPlayer}: Correctly labeled card as ${formatType(card.type)}.`);
+  } else {
+    p.tower.push({ card, label: chosen, solid: false });
+    const explanation = getExplanation(card.type, chosen);
+    setFeedback(`✗ Not quite. This is actually ${formatType(card.type)}. ${explanation} Cracked block added — vulnerable!`, 'incorrect');
+    addLog(`P${state.currentPlayer}: Mislabeled card (was ${formatType(card.type)}).`);
+  }
+
+  state.currentCard = null;
+  state.actedThisTurn = true;
+  state.turnPhaseStep = 'labeled';
+  setLabelButtonsEnabled(false);
+  document.getElementById('current-card').textContent = 'Draw a card to begin your turn.';
+  document.getElementById('draw-btn').disabled = true;
+  document.getElementById('attack-btn').disabled = (p.hand.length === 0);
+  document.getElementById('reclaim-btn').disabled = (p.reclaim.length === 0);
+
+  renderAll();
+  checkWin();
+}
+
+function endTurn() {
+  if (!state.actedThisTurn) {
+    setFeedback('Take at least one action before ending your turn (draw & label, attack, or reclaim).', 'neutral');
+    return;
+  }
+  if (state.phase === 'defend') {
+    // Can't end turn while defending — force resolution
+    resolveDefenseFail();
+    return;
+  }
+  if (state.phase !== 'build') {
+    setFeedback('Finish your current action before ending your turn.', 'neutral');
+    return;
+  }
+
+  // Ensure hand has 3 cards
+  while (state.players[state.currentPlayer].hand.length < 3) dealToHand(state.currentPlayer);
+
+  const next = state.currentPlayer === 1 ? 2 : 1;
+  state.currentPlayer = next;
+  state.round++;
+  state.drawnThisTurn = false;
+  state.actedThisTurn = false;
+  state.turnPhaseStep = 'idle';
+  state.phase = 'build';
+  state.currentCard = null;
+  state.selectedHandCard = null;
+  setLabelButtonsEnabled(false);
+
+  document.getElementById('draw-btn').disabled = false;
+  document.getElementById('attack-btn').disabled = true;
+  document.getElementById('reclaim-btn').disabled = true;
+  document.getElementById('current-card').textContent = 'Draw a card to begin your turn.';
+
+  showTurnOverlay(next);
+  renderAll();
+  updatePhaseBanner();
+}
+
+// ═══════════════════════════════════════════════
+// KNOWLEDGE UNLOCKS
+// ═══════════════════════════════════════════════
+
+const UNLOCK_PATTERNS = {
+  'either-or': "You've spotted a pattern: these arguments pretend only two options exist, ignoring middle-ground possibilities.",
+  'slippery-slope': "You've spotted a pattern: these arguments assume one small step will inevitably lead to an extreme outcome, without justification.",
+  'valid': "You're recognizing sound reasoning: valid arguments use evidence, logic, or fair constraints to support a claim."
+};
+const UNLOCK_NAMES = {
+  'either-or': "That pattern has a name: the Either/Or Fallacy (false dilemma). It artificially limits the choice to two options.",
+  'slippery-slope': "That pattern has a name: the Slippery Slope Fallacy. It assumes a chain of consequences without supporting each step.",
+  'valid': "That pattern is called valid (non-fallacious) reasoning — it doesn't misrepresent choices or assume unjustified chains."
+};
+
+function checkUnlocks(playerNum) {
+  const p = state.players[playerNum];
+  const types = ['either-or', 'slippery-slope', 'valid'];
+  let newUnlock = null;
+
+  for (const t of types) {
+    if (p.correctCount[t] >= 3 && !p.unlocks[`pattern3_${t}`]) {
+      p.unlocks[`pattern3_${t}`] = true;
+      newUnlock = { level: 'pattern', type: t };
+    }
+    if (p.correctCount[t] >= 5 && !p.unlocks[`name5_${t}`]) {
+      p.unlocks[`name5_${t}`] = true;
+      newUnlock = { level: 'name', type: t };
+    }
+  }
+
+  if (newUnlock) {
+    const msg = newUnlock.level === 'pattern'
+      ? `🔓 Pattern unlocked! ${UNLOCK_PATTERNS[newUnlock.type]}`
+      : `🏷 Definition unlocked! ${UNLOCK_NAMES[newUnlock.type]}`;
+    setFeedback(msg, 'unlock');
+    addLog(`P${playerNum} unlocked new knowledge about ${formatType(newUnlock.type)}.`);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+
+function renderAll() {
+  renderTower(1);
+  renderTower(2);
+  renderHand();
+  renderUnlocks(1);
+  renderUnlocks(2);
+  renderStats();
+  renderPanelHighlight();
+}
+
+function renderTower(playerNum) {
+  const p = state.players[playerNum];
+  const el = document.getElementById(`p${playerNum}-tower`);
+  el.innerHTML = '';
+
+  // Show filled blocks
+  for (const block of p.tower) {
+    const div = document.createElement('div');
+    div.className = `block ${block.solid ? 'solid' : 'cracked'}`;
+    div.innerHTML = `<div class="block-label">${block.solid ? '■ ' + formatType(block.label) : '⚠ cracked · ' + formatType(block.label)}</div>${block.card.text.slice(0, 60)}…`;
+    el.appendChild(div);
+  }
+  // Show empty slots
+  for (let i = p.tower.length; i < TOWER_SLOTS; i++) {
+    const div = document.createElement('div');
+    div.className = 'block empty-slot';
+    div.textContent = `slot ${i+1}`;
+    el.appendChild(div);
+  }
+
+  // Reclaim pile
+  const rp = document.getElementById(`p${playerNum}-reclaim`);
+  rp.innerHTML = '';
+  document.getElementById(`p${playerNum}-reclaim-count`).textContent = p.reclaim.length;
+  for (const c of p.reclaim) {
+    const div = document.createElement('div');
+    div.className = 'reclaim-block';
+    div.textContent = c.text.slice(0, 30) + '…';
+    rp.appendChild(div);
+  }
+}
+
+function renderHand() {
+  const p = state.players[state.currentPlayer];
+  const isDefending = state.phase === 'defend';
+  const activePlayer = isDefending ? (state.currentPlayer === 1 ? 2 : 1) : state.currentPlayer;
+  const displayHand = state.players[activePlayer].hand;
+
+  document.getElementById('hand-count').textContent = displayHand.length;
+  const container = document.getElementById('hand-cards');
+  container.innerHTML = '';
+
+  const handLabel = document.getElementById('hand-area').querySelector('h3');
+  handLabel.textContent = isDefending
+    ? `P${activePlayer} Hand — defend! (${displayHand.length} cards)`
+    : `P${state.currentPlayer} Hand (${displayHand.length} cards)`;
+
+  displayHand.forEach((card, i) => {
+    const div = document.createElement('div');
+    const isClickable = state.phase === 'attack' || state.phase === 'defend';
+    div.className = 'hand-card' + (isClickable ? '' : ' disabled') + (state.selectedHandCard === i ? ' selected' : '');
+    div.innerHTML = `<div class="hand-card-type">${formatType(card.type)}</div>${card.text.slice(0,80)}…`;
+    if (isClickable) div.onclick = () => selectHandCard(i);
+    container.appendChild(div);
+  });
+}
+
+function renderUnlocks(playerNum) {
+  const p = state.players[playerNum];
+  const el = document.getElementById(`p${playerNum}-unlocks`);
+  el.innerHTML = '';
+  const types = ['either-or', 'slippery-slope', 'valid'];
+  for (const t of types) {
+    if (p.unlocks[`name5_${t}`]) {
+      const div = document.createElement('div');
+      div.className = 'unlock-entry';
+      div.innerHTML = `<span class="unlock-name">🏷 ${UNLOCK_NAMES[t]}</span>`;
+      el.appendChild(div);
+    } else if (p.unlocks[`pattern3_${t}`]) {
+      const div = document.createElement('div');
+      div.className = 'unlock-entry';
+      div.innerHTML = `<span class="unlock-pattern">🔓 ${UNLOCK_PATTERNS[t]}</span>`;
+      el.appendChild(div);
+    }
+  }
+}
+
+function renderStats() {
+  for (let n = 1; n <= 2; n++) {
+    const p = state.players[n];
+    document.getElementById(`p${n}-correct`).textContent = p.totalCorrect;
+    document.getElementById(`p${n}-solid`).textContent = p.tower.filter(b => b.solid).length;
+  }
+}
+
+function renderPanelHighlight() {
+  const activePlayer = state.phase === 'defend'
+    ? (state.currentPlayer === 1 ? 2 : 1)
+    : state.currentPlayer;
+  document.getElementById('p1-panel').classList.toggle('active-player', activePlayer === 1);
+  document.getElementById('p2-panel').classList.toggle('active-player', activePlayer === 2);
+  document.getElementById('p1-name').textContent = `Player 1${activePlayer === 1 ? ' ◀' : ''}`;
+  document.getElementById('p2-name').textContent = `Player 2${activePlayer === 2 ? ' ◀' : ''}`;
+}
+
+// ═══════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════
+
+function updatePhaseBanner() {
+  const banner = document.getElementById('phase-banner');
+  const cp = state.currentPlayer;
+  if (state.phase === 'build') {
+    banner.className = 'phase-build';
+    banner.textContent = `PLAYER ${cp} — BUILD PHASE: Draw a card and label it`;
+  } else if (state.phase === 'attack') {
+    banner.className = 'phase-attack';
+    banner.textContent = `PLAYER ${cp} — ATTACK: Select a fallacy card from your hand to fire`;
+  } else if (state.phase === 'defend') {
+    const def = cp === 1 ? 2 : 1;
+    banner.className = 'phase-defend';
+    banner.textContent = `PLAYER ${def} — DEFEND: Play a valid argument card to block the attack`;
+  } else if (state.phase === 'reclaim') {
+    banner.className = 'phase-build';
+    banner.textContent = `PLAYER ${cp} — RECLAIM: Label the fallen block correctly to restore it`;
+  }
+}
+
+function setFeedback(msg, type) {
+  const el = document.getElementById('feedback-box');
+  el.textContent = msg;
+  el.className = type;
+}
+
+function setLabelButtonsEnabled(enabled) {
+  document.querySelectorAll('.label-btn').forEach(b => b.disabled = !enabled);
+}
+
+function addLog(msg) {
+  state.log.unshift(msg);
+  if (state.log.length > 20) state.log.pop();
+  const container = document.getElementById('log-entries');
+  container.innerHTML = '';
+  state.log.forEach(entry => {
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    div.textContent = entry;
+    container.appendChild(div);
+  });
+}
+
+function showTurnOverlay(playerNum) {
+  document.getElementById('turn-overlay-title').textContent = `Pass the device — Player ${playerNum}'s turn`;
+  document.getElementById('turn-overlay-body').textContent = `Player ${playerNum === 1 ? 2 : 1}, please look away while Player ${playerNum} takes their turn.`;
+  document.getElementById('turn-overlay').classList.add('visible');
+}
+
+function dismissOverlay() {
+  document.getElementById('turn-overlay').classList.remove('visible');
+  updatePhaseBanner();
+  setFeedback(`Player ${state.currentPlayer}: draw a card and label it to build your tower.`, 'neutral');
+}
+
+function formatType(t) {
+  if (t === 'either-or') return 'Either/Or Fallacy';
+  if (t === 'slippery-slope') return 'Slippery Slope Fallacy';
+  if (t === 'valid') return 'Valid Argument';
+  return t;
+}
+
+function getExplanation(actual, chosen) {
+  if (actual === 'either-or')
+    return "An either/or fallacy presents only two options when more exist. ";
+  if (actual === 'slippery-slope')
+    return "A slippery slope assumes one step inevitably leads to an extreme outcome without showing why. ";
+  if (actual === 'valid')
+    return "This argument uses sound reasoning — it doesn't misrepresent choices or assume unjustified chains. ";
+  return '';
+}
+
+function checkWin() {
+  for (let n = 1; n <= 2; n++) {
+    const p = state.players[n];
+    const solidCount = p.tower.filter(b => b.solid).length;
+    if (solidCount >= TOWER_SLOTS) {
+      document.getElementById('win-title').textContent = `🏰 Player ${n} Wins!`;
+      document.getElementById('win-body').textContent =
+        `Player ${n} completed a fully fortified tower of ${TOWER_SLOTS} solid argument blocks. ` +
+        `Total correct labels: P1=${state.players[1].totalCorrect}, P2=${state.players[2].totalCorrect}.`;
+      document.getElementById('win-screen').classList.add('visible');
+    }
+  }
+}
+
+function resetGame() {
+  document.getElementById('win-screen').classList.remove('visible');
+  document.getElementById('turn-overlay').classList.remove('visible');
+  document.getElementById('draw-btn').disabled = false;
+  document.getElementById('attack-btn').disabled = true;
+  document.getElementById('reclaim-btn').disabled = true;
+  setLabelButtonsEnabled(false);
+  initState();
+  renderAll();
+  updatePhaseBanner();
+  setFeedback('Game started! Player 1: draw a card and label it to begin building your tower.', 'neutral');
+  document.getElementById('current-card').textContent = 'Draw a card to begin your turn.';
+  addLog('New game started.');
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+
+  initState();
+  renderAll();
+  updatePhaseBanner();
+  setFeedback('Game started! Player 1: draw a card and label it to begin building your tower.', 'neutral');
+  addLog('Game started.');
+
+  window.drawCard = drawCard;
+  window.labelCard = labelCard;
+  window.startAttack = startAttack;
+  window.startReclaim = startReclaim;
+  window.endTurn = endTurn;
+  window.dismissOverlay = dismissOverlay;
+  window.resetGame = resetGame;
+
+}); // end DOMContentLoaded
+</script>
+</body>
+</html>
