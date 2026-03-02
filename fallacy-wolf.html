@@ -603,6 +603,97 @@ EXPLANATION: [One sentence explaining the specific logical flaw — written as i
     isLoading = false;
   }
 
+  // static list of possible accusations; later definition overrides earlier one
+  const fallaciousAccusations = [
+    { text: "Either the quiet man by the well is the werewolf, or the children are all liars — there is no third choice.", type: "either-or", explanation: "Raises a false dilemma by ignoring other possibilities." },
+    { text: "If we let the stranger live, tomorrow the wolves will have grown bold and devour the whole village.", type: "slippery-slope", explanation: "Predicts an unproven chain of worsening events." },
+    { text: "Either the tavern owner is the beast or we're all doomed; there's no middle ground.", type: "either-or", explanation: "Presents only two extremes when others exist." },
+    { text: "If we don't burn the witch's hut tonight, the plague will spread and we will all perish.", type: "slippery-slope", explanation: "Assumes dire consequences without justification." },
+    { text: "Either we send the blacksmith to the gallows or the wolves win the next hunt — I see no other way.", type: "either-or", explanation: "False dilemma framed as the only reasonable options." },
+    { text: "If the mayor isn't the werewolf, then there is no hope; his innocence would mean the end.", type: "slippery-slope", explanation: "Forgoes evidence and leaps to catastrophe." },
+    { text: "Either that woman at the edge of town is the monster or we will all starve when the crops fail.", type: "either-or", explanation: "Ignores other causes in favor of two extremes." },
+    { text: "If the baker isn't feeding us lies, soon the wolves will be in our beds.", type: "slippery-slope", explanation: "Links an innocent act to disaster." },
+    { text: "Either he is a wolf or he lies every time; choose one.", type: "either-or", explanation: "Forces a binary choice that isn't real." },
+    { text: "If we let the old healer speak, her words will curse the children and doom us all.", type: "slippery-slope", explanation: "Exaggerates a harmless event into ruin." },
+    { text: "Either the boy with the knife is the beast or the wolves already own the forest.", type: "either-or", explanation: "Creates a false either/or scenario." },
+    { text: "If we don't hang the forester now, the wolves will take the mill by morning.", type: "slippery-slope", explanation: "Claims an unproven sequence of bad luck." },
+    { text: "Either the black cat is a sign of the wolf or we're blind to the signs.", type: "either-or", explanation: "Imposes a binary superstition." },
+    { text: "If the lantern stays unlit, darkness will let the wolves sneak into every home.", type: "slippery-slope", explanation: "Links darkness to complete devastation without proof." },
+    { text: "Either the peddler is the beast or nothing we do will matter.", type: "either-or", explanation: "Restricts options to two extremes." },
+    { text: "If the rooster doesn't crow with the next dawn, the wolves will have eaten him — and us next.", type: "slippery-slope", explanation: "Turns a simple omen into ultimate doom." },
+    { text: "Either the innkeeper hides a wolf or our meals will be poisoned.", type: "either-or", explanation: "Presents a false dichotomy." },
+    { text: "If the clocktower doesn't chime, the wolves will have broken it to mark their victory.", type: "slippery-slope", explanation: "Assumes sinister intent in coincidence." },
+    { text: "Either the mysterious footprints belong to a wolf or the whole forest is lying to us.", type: "none", explanation: "No clear fallacy, just suspicion." },
+    { text: "If we allow the children to play outside, the wolves will lure them away piece by piece.", type: "slippery-slope", explanation: "Suggests a gradual catastrophe without cause." }
+  ];
+
+  async function generateAccusation(isRegen) {
+    const promptInput = document.getElementById('prompt-input');
+    const userScenario = promptInput.value.trim();
+
+    if (!userScenario) {
+      promptInput.style.borderColor = 'rgba(139,26,26,0.8)';
+      setTimeout(() => { promptInput.style.borderColor = ''; }, 2000);
+      promptInput.focus();
+      return;
+    }
+
+    if (isLoading) return;
+    isLoading = true;
+
+    const generateBtn = document.getElementById('generate-btn');
+    const regenBtn = document.getElementById('regen-btn');
+    const peekBtn = document.getElementById('peek-btn');
+    const accusationCard = document.getElementById('accusation-card');
+    const accusationText = document.getElementById('accusation-text');
+    const fallacyBadge = document.getElementById('fallacy-badge');
+    const peekPanel = document.getElementById('peek-panel');
+
+    // Reset peek
+    peekVisible = false;
+    peekPanel.classList.remove('visible');
+    peekBtn.textContent = '👁 Peek at the Curse';
+
+    generateBtn.disabled = true;
+    regenBtn.disabled = true;
+    peekBtn.disabled = true;
+    fallacyBadge.className = 'fallacy-badge';
+    accusationText.className = 'accusation-text';
+    accusationText.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+    accusationCard.classList.remove('has-content');
+
+    // pick a random accusation from the list
+    const choice = fallaciousAccusations[Math.floor(Math.random() * fallaciousAccusations.length)];
+    const accusation = choice.text;
+    const explanation = choice.explanation || '';
+
+    accusationText.className = 'accusation-text animating';
+    accusationText.textContent = accusation;
+    accusationCard.classList.add('has-content');
+
+    if (choice.type && choice.type !== 'none') {
+      fallacyBadge.textContent = choice.type === 'either-or' ? 'Either / Or' :
+                                choice.type === 'slippery-slope' ? 'Slippery Slope' : '';
+      fallacyBadge.className = 'fallacy-badge ' + choice.type + ' visible';
+    }
+
+    document.getElementById('peek-text').textContent = explanation;
+
+    regenBtn.disabled = false;
+    peekBtn.disabled = false;
+
+    // Auto-advance round indicator after successful generation
+    if (!isRegen && currentRound < 6) {
+      setTimeout(() => {
+        currentRound++;
+        updateRoundDisplay();
+      }, 1200);
+    }
+
+    generateBtn.disabled = false;
+    isLoading = false;
+  }
+
   function togglePeek() {
     const peekPanel = document.getElementById('peek-panel');
     const peekBtn = document.getElementById('peek-btn');
