@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fallacy Wolf — Werewolf Interface</title>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blood: #8B1A1A;
+    --ember: #C4622D;
+    --parchment: #E8DCC8;
+    --ink: #1A1410;
+    --shadow: #0D0A08;
+    --fog: #2A2018;
+    --gold: #B8972A;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--shadow);
+    color: var(--parchment);
+    font-family: 'Crimson Text', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 50%, rgba(139,26,26,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(196,98,45,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(184,151,42,0.04) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 32px 64px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown 0.8s ease forwards;
+  }
+
+  .wolf-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 12px rgba(139,26,26,0.6));
+    animation: flicker 4s ease-in-out infinite;
+  }
+
+  @keyframes flicker {
+    0%, 100% { filter: drop-shadow(0 0 12px rgba(139,26,26,0.6)); }
+    50% { filter: drop-shadow(0 0 20px rgba(196,98,45,0.8)); }
+  }
+
+  .title {
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 52px;
+    color: var(--blood);
+    text-shadow: 0 0 30px rgba(139,26,26,0.4), 2px 2px 0 var(--shadow);
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    color: rgba(232,220,200,0.45);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-style: italic;
+  }
+
+  .round-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 36px;
+    animation: fadeDown 0.8s 0.1s ease both;
+  }
+
+  .round-pip {
+    width: 28px;
+    height: 4px;
+    background: var(--fog);
+    border-radius: 2px;
+    transition: background 0.4s ease, box-shadow 0.4s ease;
+    cursor: pointer;
+  }
+
+  .round-pip.active {
+    background: var(--blood);
+    box-shadow: 0 0 8px rgba(139,26,26,0.6);
+  }
+
+  .round-pip.current {
+    background: var(--ember);
+    box-shadow: 0 0 12px rgba(196,98,45,0.8);
+    width: 40px;
+  }
+
+  .round-label {
+    font-size: 13px;
+    color: rgba(232,220,200,0.4);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 0 8px;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--blood), var(--ember), var(--blood), transparent);
+    margin: 0 0 36px;
+    opacity: 0.4;
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ember);
+    margin-bottom: 10px;
+    opacity: 0.8;
+  }
+
+  .prompt-section {
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  textarea {
+    width: 100%;
+    background: rgba(26, 20, 16, 0.8);
+    border: 1px solid rgba(139,26,26,0.3);
+    border-radius: 4px;
+    color: var(--parchment);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.6;
+    padding: 16px 20px;
+    resize: none;
+    min-height: 90px;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  textarea::placeholder {
+    color: rgba(232,220,200,0.2);
+    font-style: italic;
+  }
+
+  textarea:focus {
+    border-color: rgba(139,26,26,0.6);
+    box-shadow: 0 0 20px rgba(139,26,26,0.1), inset 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn {
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 1px;
+    padding: 11px 24px;
+    border-radius: 3px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn:active { transform: translateY(1px); }
+
+  .btn-primary {
+    background: var(--blood);
+    color: var(--parchment);
+    box-shadow: 0 2px 12px rgba(139,26,26,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: #A01E1E;
+    box-shadow: 0 4px 20px rgba(139,26,26,0.6);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: rgba(232,220,200,0.6);
+    border: 1px solid rgba(232,220,200,0.15);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    border-color: rgba(196,98,45,0.4);
+    color: var(--ember);
+  }
+
+  .btn-secondary:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .btn-peek {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid rgba(184,151,42,0.25);
+    margin-left: auto;
+  }
+
+  .btn-peek:hover:not(:disabled) {
+    border-color: rgba(184,151,42,0.5);
+    box-shadow: 0 0 12px rgba(184,151,42,0.15);
+  }
+
+  .btn-peek:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .output-section {
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .accusation-card {
+    background: rgba(15,10,6,0.7);
+    border: 1px solid rgba(139,26,26,0.25);
+    border-radius: 4px;
+    padding: 28px 28px 24px;
+    min-height: 120px;
+    position: relative;
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .accusation-card.has-content {
+    border-color: rgba(139,26,26,0.45);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(139,26,26,0.1);
+  }
+
+  .accusation-card::before {
+    content: '"';
+    position: absolute;
+    top: 10px;
+    left: 16px;
+    font-family: Georgia, serif;
+    font-size: 64px;
+    color: var(--blood);
+    opacity: 0.15;
+    line-height: 1;
+  }
+
+  .accusation-text {
+    font-size: 19px;
+    line-height: 1.7;
+    color: var(--parchment);
+    font-style: italic;
+    min-height: 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .accusation-placeholder {
+    color: rgba(232,220,200,0.18);
+    font-style: italic;
+    font-size: 17px;
+  }
+
+  .loading-dots {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .loading-dots span {
+    width: 5px;
+    height: 5px;
+    background: var(--blood);
+    border-radius: 50%;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  .fallacy-badge {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin-top: 14px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: all 0.4s ease 0.3s;
+  }
+
+  .fallacy-badge.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .fallacy-badge.either-or {
+    background: rgba(139,26,26,0.2);
+    border: 1px solid rgba(139,26,26,0.4);
+    color: #E07070;
+  }
+
+  .fallacy-badge.slippery-slope {
+    background: rgba(196,98,45,0.2);
+    border: 1px solid rgba(196,98,45,0.4);
+    color: #E0A070;
+  }
+
+  .peek-panel {
+    margin-top: 16px;
+    background: rgba(184,151,42,0.05);
+    border: 1px solid rgba(184,151,42,0.2);
+    border-radius: 4px;
+    padding: 18px 20px;
+    display: none;
+  }
+
+  .peek-panel.visible {
+    display: block;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .peek-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.7;
+    margin-bottom: 8px;
+  }
+
+  .peek-text {
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(232,220,200,0.65);
+    font-style: italic;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .accusation-text.animating {
+    animation: fadeIn 0.6s ease forwards;
+  }
+
+  .footer-note {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 12px;
+    color: rgba(232,220,200,0.18);
+    letter-spacing: 1px;
+    font-style: italic;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--shadow); }
+  ::-webkit-scrollbar-thumb { background: var(--blood); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <span class="wolf-icon">🐺</span>
+    <h1 class="title">Fallacy Wolf</h1>
+    <p class="subtitle">Werewolf's Tongue</p>
+  </header>
+
+  <div class="round-bar">
+    <span class="round-label">Night</span>
+    <div class="round-pip active" id="pip-1" onclick="setRound(1)" title="Round 1"></div>
+    <div class="round-pip active" id="pip-2" onclick="setRound(2)" title="Round 2"></div>
+    <div class="round-pip current" id="pip-3" onclick="setRound(3)" title="Round 3"></div>
+    <div class="round-pip" id="pip-4" onclick="setRound(4)" title="Round 4"></div>
+    <div class="round-pip" id="pip-5" onclick="setRound(5)" title="Round 5"></div>
+    <div class="round-pip" id="pip-6" onclick="setRound(6)" title="Round 6"></div>
+    <span class="round-label" id="round-num">Round 3 of 6</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="prompt-section">
+    <div class="section-label">Craft your accusation</div>
+    <textarea 
+      id="prompt-input" 
+      placeholder="Describe a village scenario to spin… (e.g. 'blame the drought on the old mill', 'accuse the river crossing of strange happenings')"
+      rows="3"
+    ></textarea>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-primary" id="generate-btn" onclick="generateAccusation(false)">
+      Conjure Accusation
+    </button>
+    <button class="btn btn-secondary" id="regen-btn" onclick="generateAccusation(true)" disabled>
+      Recast ↺
+    </button>
+    <button class="btn btn-peek" id="peek-btn" onclick="togglePeek()" disabled>
+      👁 Peek at the Curse
+    </button>
+  </div>
+
+  <div class="output-section">
+    <div class="section-label">Your words for the village</div>
+    <div class="accusation-card" id="accusation-card">
+      <div class="accusation-text accusation-placeholder" id="accusation-text">
+        The village awaits your tongue…
+      </div>
+      <div class="fallacy-badge" id="fallacy-badge"></div>
+    </div>
+
+    <div class="peek-panel" id="peek-panel">
+      <div class="peek-label">🔮 The Curse Revealed — your eyes only</div>
+      <div class="peek-text" id="peek-text"></div>
+    </div>
+  </div>
+
+  <p class="footer-note">Only you can see this screen. Read your accusation aloud — and survive.</p>
+
+</div>
+
+<script>
+  let currentRound = 3;
+  let currentFallacyType = null;
+  let peekVisible = false;
+  let isLoading = false;
+
+  function pickFallacyType(round) {
+    // Alternate: odd rounds = either-or, even = slippery-slope
+    return round % 2 === 1 ? 'either-or' : 'slippery-slope';
+  }
+
+  function setRound(n) {
+    currentRound = n;
+    updateRoundDisplay();
+  }
+
+  function updateRoundDisplay() {
+    for (let i = 1; i <= 6; i++) {
+      const pip = document.getElementById('pip-' + i);
+      pip.className = 'round-pip';
+      if (i < currentRound) pip.classList.add('active');
+      else if (i === currentRound) pip.classList.add('current');
+    }
+    document.getElementById('round-num').textContent = 'Round ' + currentRound + ' of 6';
+  }
+
+  function buildPrompt(userScenario, fallacyType) {
+    const fallacyInstructions = fallacyType === 'either-or'
+      ? `Either/Or Fallacy (False Dilemma): Present only two options as if no other possibilities exist, when more alternatives are clearly available. The argument must feel measured and logical — like a concerned villager narrowing down the only reasonable paths forward.`
+      : `Slippery Slope Fallacy: Claim that one event will lead through a chain of increasingly bad consequences, without justifying each step in the chain. The argument must sound calm, cautious, and entirely plausible — like a wise elder warning of what comes next.`;
+
+    return `You are the werewolf hiding in a village. You must make a public accusation to mislead the villagers and protect yourself from being discovered.
+
+The player wants to build an accusation around this scenario: "${userScenario}"
+
+Your task: Write a SHORT, persuasive village accusation (2-4 sentences) that contains a ${fallacyType === 'either-or' ? 'Either/Or (False Dilemma)' : 'Slippery Slope'} fallacy.
+
+Fallacy to embed:
+${fallacyInstructions}
+
+CRITICAL RULES:
+- Sound COMPLETELY REASONABLE — like the calmest, most logical villager in the room
+- Do NOT sound like a villain or make extreme claims
+- Use simple, slightly old-fashioned village language
+- Do NOT mention logic, fallacies, or reasoning explicitly
+- The argument should feel almost convincing — that is what makes it dangerous
+- 2-4 sentences ONLY
+
+Then on a new line write:
+EXPLANATION: [One sentence explaining the specific logical flaw — written as if for the werewolf player to understand privately]`;
+  }
+
+  async function generateAccusation(isRegen) {
+    const promptInput = document.getElementById('prompt-input');
+    const userScenario = promptInput.value.trim();
+
+    if (!userScenario) {
+      promptInput.style.borderColor = 'rgba(139,26,26,0.8)';
+      setTimeout(() => { promptInput.style.borderColor = ''; }, 2000);
+      promptInput.focus();
+      return;
+    }
+
+    if (isLoading) return;
+    isLoading = true;
+
+    const generateBtn = document.getElementById('generate-btn');
+    const regenBtn = document.getElementById('regen-btn');
+    const peekBtn = document.getElementById('peek-btn');
+    const accusationCard = document.getElementById('accusation-card');
+    const accusationText = document.getElementById('accusation-text');
+    const fallacyBadge = document.getElementById('fallacy-badge');
+    const peekPanel = document.getElementById('peek-panel');
+
+    // Reset peek
+    peekVisible = false;
+    peekPanel.classList.remove('visible');
+    peekBtn.textContent = '👁 Peek at the Curse';
+
+    generateBtn.disabled = true;
+    regenBtn.disabled = true;
+    peekBtn.disabled = true;
+    fallacyBadge.className = 'fallacy-badge';
+    accusationText.className = 'accusation-text';
+    accusationText.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+    accusationCard.classList.remove('has-content');
+
+    const fallacyType = isRegen && currentFallacyType ? currentFallacyType : pickFallacyType(currentRound);
+    currentFallacyType = fallacyType;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: buildPrompt(userScenario, fallacyType) }]
+        })
+      });
+
+      const data = await response.json();
+      const fullText = data.content.map(i => i.text || '').join('');
+
+      const parts = fullText.split('EXPLANATION:');
+      const accusation = parts[0].trim().replace(/^["']+|["']+$/g, '');
+      const explanation = parts[1] ? parts[1].trim() : 'This argument contains a logical flaw — the village may not notice.';
+
+      accusationText.className = 'accusation-text animating';
+      accusationText.textContent = accusation;
+      accusationCard.classList.add('has-content');
+
+      fallacyBadge.textContent = fallacyType === 'either-or' ? 'Either / Or' : 'Slippery Slope';
+      fallacyBadge.className = 'fallacy-badge ' + fallacyType + ' visible';
+
+      document.getElementById('peek-text').textContent = explanation;
+
+      regenBtn.disabled = false;
+      peekBtn.disabled = false;
+
+      // Auto-advance round indicator after successful generation
+      if (!isRegen && currentRound < 6) {
+        setTimeout(() => {
+          currentRound++;
+          updateRoundDisplay();
+        }, 1200);
+      }
+
+    } catch (err) {
+      accusationText.className = 'accusation-text accusation-placeholder';
+      accusationText.textContent = 'The spirits are silent… check your connection and try again.';
+      console.error(err);
+    }
+
+    generateBtn.disabled = false;
+    isLoading = false;
+  }
+
+  function togglePeek() {
+    const peekPanel = document.getElementById('peek-panel');
+    const peekBtn = document.getElementById('peek-btn');
+    peekVisible = !peekVisible;
+    peekPanel.classList.toggle('visible', peekVisible);
+    peekBtn.textContent = peekVisible ? '👁 Hide the Curse' : '👁 Peek at the Curse';
+  }
+
+  updateRoundDisplay();
+</script>
+</body>
+</html>
