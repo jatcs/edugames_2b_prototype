@@ -498,9 +498,32 @@ h1 {
   background: var(--surface);
   border: 1px solid var(--trick);
   border-radius: 8px;
-  padding: 28px 32px;
-  max-width: 480px;
+  padding: 0;
+  max-width: 500px;
   width: 90%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#setup-box-header {
+  padding: 22px 28px 14px;
+  flex-shrink: 0;
+}
+
+#setup-box-scroll {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0 28px;
+  min-height: 0;
+}
+
+#setup-box-footer {
+  padding: 14px 28px 22px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
 }
 
 #setup-box h2 {
@@ -755,27 +778,34 @@ h1 {
 
 <div id="setup-screen">
   <div id="setup-box">
-    <h2>🕵 Attacker Setup</h2>
-    <p>Player 2 (Attacker): secretly choose or write <strong>up to <span id="setup-intro-count">3</span> trick cards</strong> to plant in the deck. Pick from the suggestions below, regenerate ones you don't like, or write your own convincing-sounding fallacy.</p>
-    <div class="trick-count-display">Selected: <span id="trick-selected-count">0</span> / max <span id="setup-max-count">3</span></div>
-    <div id="trick-options"></div>
-    <button id="regen-btn" onclick="regenSuggestions()" style="margin-bottom:14px;padding:6px 14px;background:transparent;border:1px solid var(--muted);border-radius:3px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.65rem;letter-spacing:1px;cursor:pointer;">↻ Regenerate Unselected Suggestions</button>
 
-    <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:2px;">
-      <div style="font-family:'Syne Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">✍ WRITE YOUR OWN TRICK CARD</div>
-      <textarea id="custom-trick-text" placeholder="Write a convincing-sounding but fallacious argument here…" style="width:100%;min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.75rem;padding:8px;resize:vertical;line-height:1.5;margin-bottom:6px;"></textarea>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <select id="custom-trick-type" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.75rem;padding:6px 8px;">
-          <option value="either-or">Either/Or Fallacy</option>
-          <option value="slippery-slope">Slippery Slope Fallacy</option>
-        </select>
-        <button onclick="addCustomTrick()" style="padding:6px 14px;background:transparent;border:1px solid var(--trick);border-radius:3px;color:var(--trick);font-family:'Syne Mono',monospace;font-size:0.65rem;letter-spacing:1px;cursor:pointer;white-space:nowrap;">+ Add Card</button>
+    <div id="setup-box-header">
+      <h2>🕵 Attacker Setup</h2>
+      <p>Player 2 (Attacker): secretly choose or write <strong>up to <span id="setup-intro-count">3</span> trick cards</strong> to plant in the deck. Pick from the suggestions below, regenerate ones you don't like, or write your own convincing-sounding fallacy.</p>
+      <div class="trick-count-display">Selected: <span id="trick-selected-count">0</span> / max <span id="setup-max-count">3</span></div>
+    </div>
+
+    <div id="setup-box-scroll">
+      <div id="trick-options"></div>
+      <button id="regen-btn" onclick="regenSuggestions()" style="margin-bottom:14px;padding:6px 14px;background:transparent;border:1px solid var(--muted);border-radius:3px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.65rem;letter-spacing:1px;cursor:pointer;">↻ Regenerate Unselected Suggestions</button>
+
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:2px;margin-bottom:14px;">
+        <div style="font-family:'Syne Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">✍ WRITE YOUR OWN TRICK CARD</div>
+        <textarea id="custom-trick-text" placeholder="Write a convincing-sounding but fallacious argument here…" style="width:100%;min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.75rem;padding:8px;resize:vertical;line-height:1.5;margin-bottom:6px;"></textarea>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="custom-trick-type" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.75rem;padding:6px 8px;">
+            <option value="either-or">Either/Or Fallacy</option>
+            <option value="slippery-slope">Slippery Slope Fallacy</option>
+          </select>
+          <button onclick="addCustomTrick()" style="padding:6px 14px;background:transparent;border:1px solid var(--trick);border-radius:3px;color:var(--trick);font-family:'Syne Mono',monospace;font-size:0.65rem;letter-spacing:1px;cursor:pointer;white-space:nowrap;">+ Add Card</button>
+        </div>
       </div>
     </div>
 
-    <div style="margin-top:14px;">
+    <div id="setup-box-footer">
       <button id="confirm-tricks" onclick="confirmTricks()" disabled>Plant Tricks →</button>
     </div>
+
   </div>
 </div>
 
@@ -825,18 +855,26 @@ const ARGUMENT_CARDS = [
   { id:17, type:'valid',          text:"Splitting into subgroups for this phase will let us work in parallel and save time overall." },
 ];
 
-// Trick cards — extra-convincing-sounding fallacies (larger pool for regeneration)
+// Trick cards — pool of 18 so hard mode (15) always has suggestions + extras to regenerate
 const TRICK_POOL = [
-  { id:'t1', type:'either-or',      text:"There really are only two viable approaches here: full commitment or stepping back entirely. Compromise will just water down both options." },
-  { id:'t2', type:'slippery-slope', text:"Letting this small disagreement go unresolved will inevitably erode trust until the team can no longer function together." },
-  { id:'t3', type:'slippery-slope', text:"If we don't adopt a single unified voice in this document, readers will sense the inconsistency and dismiss the whole thing." },
-  { id:'t4', type:'either-or',      text:"We have to choose: prioritize quality or meet the deadline. Trying to do both means failing at both." },
-  { id:'t5', type:'slippery-slope', text:"Once we open the door to scope changes, we'll never be able to close it — every stakeholder will keep adding requests." },
-  { id:'t6', type:'either-or',      text:"Either everyone agrees on this direction by end of day, or we should seriously consider whether this team can function at all." },
-  { id:'t7', type:'slippery-slope', text:"If we allow informal communication in the group chat, professionalism will erode and eventually no one will take the project seriously." },
-  { id:'t8', type:'either-or',      text:"We either follow the original plan exactly or we admit the whole proposal was poorly thought out from the start." },
-  { id:'t9', type:'slippery-slope', text:"Once we start making exceptions for late submissions, the whole grading system will become meaningless and no one will meet any deadlines." },
-  { id:'t10',type:'either-or',      text:"You can either support this decision fully or remove yourself from the decision-making process. Half-support isn't useful here." },
+  { id:'t1',  type:'either-or',      text:"There really are only two viable approaches here: full commitment or stepping back entirely. Compromise will just water down both options." },
+  { id:'t2',  type:'slippery-slope', text:"Letting this small disagreement go unresolved will inevitably erode trust until the team can no longer function together." },
+  { id:'t3',  type:'slippery-slope', text:"If we don't adopt a single unified voice in this document, readers will sense the inconsistency and dismiss the whole thing." },
+  { id:'t4',  type:'either-or',      text:"We have to choose: prioritize quality or meet the deadline. Trying to do both means failing at both." },
+  { id:'t5',  type:'slippery-slope', text:"Once we open the door to scope changes, we'll never be able to close it — every stakeholder will keep adding requests." },
+  { id:'t6',  type:'either-or',      text:"Either everyone agrees on this direction by end of day, or we should seriously consider whether this team can function at all." },
+  { id:'t7',  type:'slippery-slope', text:"If we allow informal communication in the group chat, professionalism will erode and eventually no one will take the project seriously." },
+  { id:'t8',  type:'either-or',      text:"We either follow the original plan exactly or we admit the whole proposal was poorly thought out from the start." },
+  { id:'t9',  type:'slippery-slope', text:"Once we start making exceptions for late submissions, the whole grading system will become meaningless and no one will meet any deadlines." },
+  { id:'t10', type:'either-or',      text:"You can either support this decision fully or remove yourself from the decision-making process. Half-support isn't useful here." },
+  { id:'t11', type:'slippery-slope', text:"If we let anyone present their section out of order, the whole presentation will lose coherence and the audience will tune out entirely." },
+  { id:'t12', type:'either-or',      text:"Either we finalize the methodology today or we'll have to scrap the entire research phase and start over." },
+  { id:'t13', type:'slippery-slope', text:"Allowing one person to use a different citation style will cause the document to look inconsistent and reviewers will reject it outright." },
+  { id:'t14', type:'either-or',      text:"We can either keep this collaboration strictly professional or admit that the team dynamics will never work." },
+  { id:'t15', type:'slippery-slope', text:"If we don't address this minor formatting issue now, the whole document will look unprofessional and we'll lose all credibility." },
+  { id:'t16', type:'either-or',      text:"You're either fully committed to this project timeline or you're not really a team player — there's no in-between." },
+  { id:'t17', type:'slippery-slope', text:"Once we allow the scope to shift even slightly, project creep will take over and we'll never deliver anything on time." },
+  { id:'t18', type:'either-or',      text:"We either present all our findings or we might as well have done no research at all — partial results aren't worth sharing." },
 ];
 
 // ═══════════════════════════════
@@ -895,8 +933,9 @@ function startSetup() {
   document.getElementById('confirm-tricks').disabled = true;
   state.tricksPlanted = [];
 
-  // Pick suggestions to show (up to 5, or trickLimit if smaller)
-  shownTrickIds = shuffle([...TRICK_POOL].filter(t => !t.isCustom)).slice(0, 5).map(t => t.id);
+  // Show exactly trickLimit suggestions (all built-in, shuffled)
+  const builtIn = TRICK_POOL.filter(t => !t.isCustom);
+  shownTrickIds = shuffle([...builtIn]).slice(0, state.trickLimit).map(t => t.id);
   renderTrickOptions();
   document.getElementById('setup-screen').classList.add('visible');
 }
@@ -923,30 +962,28 @@ function regenSuggestions() {
 
   // Built-in pool only (never regenerate into custom cards)
   const builtInPool = TRICK_POOL.filter(t => !t.isCustom);
+  const slotCount = state.trickLimit;
 
-  // IDs already shown that are NOT planted — these are the ones to replace
-  const shownUnselected = shownTrickIds.filter(id => !plantedIds.has(id));
-
-  // Built-in IDs not currently shown at all (fresh candidates)
+  // Built-in IDs not currently shown — fresh candidates
   const notYetShown = builtInPool
     .map(t => t.id)
     .filter(id => !shownTrickIds.includes(id));
 
-  // Shuffle fresh candidates; fall back to cycling already-shown unselected if pool exhausted
-  const candidates = shuffle([...notYetShown]);
-  if (candidates.length === 0) {
-    // All built-in cards have been shown — cycle through them again (excluding planted)
-    candidates.push(...shuffle(builtInPool.map(t => t.id).filter(id => !plantedIds.has(id))));
+  // Shuffle fresh candidates; fall back to cycling all non-planted if pool exhausted
+  let candidates = shuffle([...notYetShown]);
+  if (candidates.length < slotCount - plantedIds.size) {
+    const fallback = shuffle(builtInPool.map(t => t.id).filter(id => !plantedIds.has(id)));
+    candidates = [...new Set([...candidates, ...fallback])];
   }
 
-  // Replace unselected shown slots with fresh candidates
-  const newShown = shownTrickIds.filter(id => plantedIds.has(id)); // always keep planted
-  for (const candidate of candidates) {
-    if (newShown.length >= 5) break;
-    if (!newShown.includes(candidate)) newShown.push(candidate);
+  // Always keep planted IDs; fill remaining slots with fresh candidates
+  const newShown = [...plantedIds];
+  for (const id of candidates) {
+    if (newShown.length >= slotCount) break;
+    if (!newShown.includes(id)) newShown.push(id);
   }
 
-  shownTrickIds = newShown.slice(0, 5);
+  shownTrickIds = newShown.slice(0, slotCount);
   renderTrickOptions();
 }
 
