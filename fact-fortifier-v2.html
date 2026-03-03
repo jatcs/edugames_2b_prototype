@@ -696,7 +696,7 @@ h1 {
         <button class="act-btn btn-draw"   id="btn-draw"   onclick="drawCard()">→ Draw Card</button>
         <button class="act-btn btn-place"  id="btn-place"  onclick="choosePlaceCol()" disabled>↑ Place Block</button>
         <button class="act-btn btn-broken" id="btn-broken" onclick="markBroken()" disabled>✕ Mark as Broken</button>
-        <button class="act-btn btn-tape"   id="btn-tape"   onclick="startTape()" disabled>⊛ Add Duct Tape</button>
+        <button class="act-btn btn-tape"   id="btn-tape"   onclick="startTape()" disabled>⊛ Fix Argument (Add Duct Tape)</button>
       </div>
 
       <div id="col-selector">
@@ -1017,7 +1017,7 @@ function drawCard() {
   const cardEl = document.getElementById('card-text');
   cardEl.className = '';
   cardEl.textContent = state.currentCard.text;
-  setFeedback('Choose an action: place it, mark it broken, or duct tape it with a rebuttal.', 'fb-neutral');
+  setFeedback('Choose an action: place it, mark it broken, or fix / duct tape it with a rebuttal.', 'fb-neutral');
   setPhaseBanner('BUILDER\'S TURN — choose an action', 'banner-build');
 }
 
