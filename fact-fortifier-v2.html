@@ -734,11 +734,30 @@ h1 {
 </div>
 
 <!-- ATTACKER SETUP -->
+<!-- DIFFICULTY SCREEN -->
+<div id="difficulty-screen" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);align-items:center;justify-content:center;z-index:60;">
+  <div style="background:var(--surface);border:1px solid var(--gold);border-radius:8px;padding:32px 36px;max-width:460px;width:90%;text-align:center;">
+    <h2 style="font-family:'Syne Mono',monospace;font-size:1rem;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">🏗 Select Difficulty</h2>
+    <p style="font-size:0.75rem;color:var(--muted);margin-bottom:24px;line-height:1.6;">Player 1 — choose how many trick cards the attacker can plant. More tricks means more traps hidden in the deck.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button onclick="selectDifficulty('easy')" class="diff-btn" style="padding:14px 16px;background:transparent;border:1px solid var(--green);border-radius:4px;color:var(--green);font-family:'Syne Mono',monospace;font-size:0.75rem;letter-spacing:2px;cursor:pointer;text-align:left;transition:background 0.15s;">
+        <span style="font-size:1rem;">🟢</span> &nbsp;EASY &nbsp;<span style="color:var(--muted);font-size:0.65rem;">— attacker plants 3 trick cards</span>
+      </button>
+      <button onclick="selectDifficulty('medium')" class="diff-btn" style="padding:14px 16px;background:transparent;border:1px solid var(--gold);border-radius:4px;color:var(--gold);font-family:'Syne Mono',monospace;font-size:0.75rem;letter-spacing:2px;cursor:pointer;text-align:left;transition:background 0.15s;">
+        <span style="font-size:1rem;">🟡</span> &nbsp;MEDIUM &nbsp;<span style="color:var(--muted);font-size:0.65rem;">— attacker plants 9 trick cards</span>
+      </button>
+      <button onclick="selectDifficulty('hard')" class="diff-btn" style="padding:14px 16px;background:transparent;border:1px solid var(--red);border-radius:4px;color:var(--red);font-family:'Syne Mono',monospace;font-size:0.75rem;letter-spacing:2px;cursor:pointer;text-align:left;transition:background 0.15s;">
+        <span style="font-size:1rem;">🔴</span> &nbsp;HARD &nbsp;<span style="color:var(--muted);font-size:0.65rem;">— attacker plants 15 trick cards</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="setup-screen">
   <div id="setup-box">
     <h2>🕵 Attacker Setup</h2>
-    <p>Player 2 (Attacker): secretly choose or write <strong>2–3 trick cards</strong> to plant in the deck. Pick from the suggestions below, regenerate ones you don't like, or write your own convincing-sounding fallacy.</p>
-    <div class="trick-count-display">Selected: <span id="trick-selected-count">0</span> / max 3</div>
+    <p>Player 2 (Attacker): secretly choose or write <strong>up to <span id="setup-intro-count">3</span> trick cards</strong> to plant in the deck. Pick from the suggestions below, regenerate ones you don't like, or write your own convincing-sounding fallacy.</p>
+    <div class="trick-count-display">Selected: <span id="trick-selected-count">0</span> / max <span id="setup-max-count">3</span></div>
     <div id="trick-options"></div>
     <button id="regen-btn" onclick="regenSuggestions()" style="margin-bottom:14px;padding:6px 14px;background:transparent;border:1px solid var(--muted);border-radius:3px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.65rem;letter-spacing:1px;cursor:pointer;">↻ Regenerate Unselected Suggestions</button>
 
@@ -830,6 +849,8 @@ let shownTrickIds = [];
 function initState() {
   state = {
     phase: 'setup',
+    difficulty: 'easy',   // 'easy' | 'medium' | 'hard'
+    trickLimit: 3,        // max tricks attacker can plant
     deck: [],
     currentCard: null,
     pendingAction: null,
@@ -852,9 +873,30 @@ function initState() {
 
 // Tracks which pool IDs are currently shown (for regeneration)
 
+function selectDifficulty(level) {
+  const limits = { easy: 3, medium: 9, hard: 15 };
+  state.difficulty = level;
+  state.trickLimit = limits[level];
+  document.getElementById('difficulty-screen').style.display = 'none';
+
+  // Pass device to attacker
+  document.getElementById('pass-title').textContent = 'Pass the Device';
+  document.getElementById('pass-body').textContent = `Difficulty set to ${level.toUpperCase()} (${state.trickLimit} trick cards). Hand the device to Player 2 (Attacker) — don't let them see this screen.`;
+  document.getElementById('pass-screen').classList.add('visible');
+  // When pass is dismissed, show attacker setup
+  state._afterPass = 'setup';
+}
+
 function startSetup() {
-  // Pick 5 random suggestions to show initially
-  shownTrickIds = shuffle([...TRICK_POOL]).slice(0, 5).map(t => t.id);
+  // Update setup screen text to reflect trick limit
+  document.getElementById('setup-intro-count').textContent = state.trickLimit;
+  document.getElementById('setup-max-count').textContent = state.trickLimit;
+  document.getElementById('trick-selected-count').textContent = '0';
+  document.getElementById('confirm-tricks').disabled = true;
+  state.tricksPlanted = [];
+
+  // Pick suggestions to show (up to 5, or trickLimit if smaller)
+  shownTrickIds = shuffle([...TRICK_POOL].filter(t => !t.isCustom)).slice(0, 5).map(t => t.id);
   renderTrickOptions();
   document.getElementById('setup-screen').classList.add('visible');
 }
@@ -914,7 +956,7 @@ function toggleTrick(id, el) {
     state.tricksPlanted.splice(idx, 1);
     el.classList.remove('selected');
   } else {
-    if (state.tricksPlanted.length >= 3) return;
+  if (state.tricksPlanted.length >= state.trickLimit) return;
     const tc = TRICK_POOL.find(t => t.id === id);
     if (tc) state.tricksPlanted.push({ id: tc.id, text: tc.text, type: tc.type });
     el.classList.add('selected');
@@ -930,7 +972,7 @@ function addCustomTrick() {
     document.getElementById('custom-trick-text').style.borderColor = 'var(--red)';
     return;
   }
-  if (state.tricksPlanted.length >= 3) {
+  if (state.tricksPlanted.length >= state.trickLimit) {
     document.getElementById('custom-trick-text').style.borderColor = 'var(--red)';
     document.getElementById('custom-trick-text').placeholder = 'Max 3 tricks already selected!';
     return;
@@ -967,12 +1009,17 @@ function confirmTricks() {
 
 function dismissPass() {
   document.getElementById('pass-screen').classList.remove('visible');
-  state.phase = 'build';
-  buildGrid();
-  updateDeckCount();
-  setFeedback('Draw your first card to begin building.', 'fb-neutral');
-  setPhaseBanner('BUILDER\'S TURN — draw a card', 'banner-build');
-  addLog('Game started. Builder draws first.', '');
+  if (state._afterPass === 'setup') {
+    state._afterPass = null;
+    startSetup();
+  } else {
+    state.phase = 'build';
+    buildGrid();
+    updateDeckCount();
+    setFeedback('Draw your first card to begin building.', 'fb-neutral');
+    setPhaseBanner('BUILDER\'S TURN — draw a card', 'banner-build');
+    addLog('Game started. Builder draws first.', '');
+  }
 }
 
 // ═══════════════════════════════
@@ -1448,7 +1495,7 @@ function restartGame() {
   hideColSelector();
   document.getElementById('log-box').innerHTML = '';
   setFeedback('Waiting…', 'fb-neutral');
-  startSetup();
+  document.getElementById('difficulty-screen').style.display = 'flex';
 }
 
 // ═══════════════════════════════
@@ -1550,6 +1597,7 @@ window.dismissPass = dismissPass;
 window.restartGame = restartGame;
 window.regenSuggestions = regenSuggestions;
 window.addCustomTrick = addCustomTrick;
+window.selectDifficulty = selectDifficulty;
 
 // ═══════════════════════════════
 // BOOT
@@ -1558,7 +1606,7 @@ window.addCustomTrick = addCustomTrick;
 initState();
 buildGrid();
 renderGrid();
-startSetup();
+document.getElementById('difficulty-screen').style.display = 'flex';
 
 }); // end DOMContentLoaded
 </script>
