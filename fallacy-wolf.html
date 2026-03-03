@@ -3,563 +3,623 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fallacy Wolf — Werewolf Interface</title>
+<title>Fallacy Wolf</title>
 <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --blood: #8B1A1A;
-    --ember: #C4501A;
-    --gold: #C9A84C;
-    --parchment: #F2E8D5;
-    --dark: #0D0A07;
-    --shadow: #1A1208;
-    --fog: #2A2318;
-    --muted: rgba(242,232,213,0.35);
-  }
+:root {
+  --blood:    #8B1A1A;
+  --ember:    #C4501A;
+  --gold:     #C9A84C;
+  --green:    #5A9E6F;
+  --parchment:#F2E8D5;
+  --dark:     #0D0A07;
+  --shadow:   #1A1208;
+  --fog:      #2A2318;
+  --muted:    rgba(242,232,213,0.35);
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+*{margin:0;padding:0;box-sizing:border-box;}
 
-  body {
-    background: var(--dark);
-    color: var(--parchment);
-    font-family: 'Crimson Pro', serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+body{
+  background:var(--dark);
+  color:var(--parchment);
+  font-family:'Crimson Pro',serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse at 15% 40%, rgba(139,26,26,0.07) 0%, transparent 55%),
-      radial-gradient(ellipse at 85% 15%, rgba(196,80,26,0.05) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse at 15% 40%,rgba(139,26,26,.07) 0%,transparent 55%),
+    radial-gradient(ellipse at 85% 15%,rgba(196,80,26,.05) 0%,transparent 50%);
+  pointer-events:none;z-index:0;
+}
 
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 780px;
-    margin: 0 auto;
-    padding: 36px 24px 80px;
-  }
+/* ── SCREENS ── */
+.screen{
+  display:none;
+  position:relative;z-index:1;
+  min-height:100vh;
+}
+.screen.active{display:block;}
 
-  /* Header */
-  .header { text-align: center; margin-bottom: 36px; }
-  .title {
-    font-family: 'Uncial Antiqua', cursive;
-    font-size: clamp(1.8rem, 4.5vw, 2.8rem);
-    color: var(--gold);
-    text-shadow: 0 0 40px rgba(201,168,76,0.25);
-    letter-spacing: 0.04em;
-  }
-  .subtitle {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--muted);
-    font-style: italic;
-    margin-top: 6px;
-  }
-  .header-rule {
-    width: 100px; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    margin: 14px auto 0;
-    opacity: 0.4;
-  }
+.container{
+  max-width:780px;
+  margin:0 auto;
+  padding:36px 24px 80px;
+}
 
-  /* Round tracker */
-  .round-tracker {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 32px;
-  }
-  .round-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  .pips-row { display: flex; gap: 8px; align-items: center; }
-  .pip {
-    width: 32px; height: 5px;
-    border-radius: 3px;
-    background: rgba(242,232,213,0.08);
-    transition: background 0.4s, box-shadow 0.4s, width 0.3s;
-  }
-  .pip.done   { background: var(--blood); box-shadow: 0 0 6px rgba(139,26,26,0.5); }
-  .pip.active { background: var(--gold);  box-shadow: 0 0 10px rgba(201,168,76,0.6); width: 44px; animation: pip-pulse 2s ease-in-out infinite; }
-  @keyframes pip-pulse {
-    0%,100% { box-shadow: 0 0 8px rgba(201,168,76,0.5); }
-    50%      { box-shadow: 0 0 18px rgba(201,168,76,0.9); }
-  }
+/* ── SHARED CHROME ── */
+.header{text-align:center;margin-bottom:32px;}
+.game-title{
+  font-family:'Uncial Antiqua',cursive;
+  font-size:clamp(1.6rem,4vw,2.6rem);
+  color:var(--gold);
+  text-shadow:0 0 40px rgba(201,168,76,.25);
+  letter-spacing:.04em;
+}
+.screen-tag{
+  font-size:.7rem;text-transform:uppercase;
+  letter-spacing:.15em;color:var(--muted);
+  font-style:italic;margin-top:6px;
+}
+.header-rule{
+  width:100px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  margin:12px auto 0;opacity:.4;
+}
 
-  /* Section chrome */
-  .section { margin-bottom: 26px; }
-  .section-label {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: rgba(196,80,26,0.7);
-    margin-bottom: 10px;
-  }
-  .rule { height: 1px; background: linear-gradient(90deg,transparent,rgba(201,168,76,0.12),transparent); margin: 26px 0; }
+.rule{height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.12),transparent);margin:24px 0;}
+.section-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(196,80,26,.7);margin-bottom:10px;}
 
-  /* Difficulty badge */
-  .difficulty-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-  .diff-badge {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 3px 10px;
-    border-radius: 20px;
-    border: 1px solid;
-  }
-  .diff-badge.hard   { color: #E05555; border-color: rgba(224,85,85,0.3); background: rgba(224,85,85,0.07); }
-  .diff-badge.medium { color: var(--gold); border-color: rgba(201,168,76,0.3); background: rgba(201,168,76,0.07); }
-  .diff-badge.easy   { color: #6DBF7E; border-color: rgba(109,191,126,0.3); background: rgba(109,191,126,0.07); }
-  .diff-note {
-    font-size: 0.8rem;
-    color: var(--muted);
-    font-style: italic;
-  }
+/* round pips */
+.round-tracker{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:28px;}
+.round-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);white-space:nowrap;}
+.pips-row{display:flex;gap:8px;align-items:center;}
+.pip{width:32px;height:5px;border-radius:3px;background:rgba(242,232,213,.08);transition:background .4s,box-shadow .4s,width .3s;}
+.pip.done{background:var(--blood);box-shadow:0 0 6px rgba(139,26,26,.5);}
+.pip.active{background:var(--gold);box-shadow:0 0 10px rgba(201,168,76,.6);width:44px;animation:pip-pulse 2s ease-in-out infinite;}
+@keyframes pip-pulse{0%,100%{box-shadow:0 0 8px rgba(201,168,76,.5);}50%{box-shadow:0 0 18px rgba(201,168,76,.9);}}
 
-  /* Suggestion cards */
-  .suggestions-grid { display: flex; flex-direction: column; gap: 10px; }
-  .suggestion-card {
-    background: rgba(242,232,213,0.03);
-    border: 1px solid rgba(242,232,213,0.08);
-    border-radius: 4px;
-    padding: 14px 16px;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    position: relative;
-  }
-  .suggestion-card:hover {
-    border-color: rgba(201,168,76,0.25);
-    background: rgba(242,232,213,0.05);
-  }
-  .suggestion-card.selected {
-    border-color: rgba(201,168,76,0.45);
-    background: rgba(201,168,76,0.06);
-  }
-  .suggestion-card.selected::after {
-    content: '✓';
-    position: absolute;
-    top: 12px; right: 14px;
-    color: var(--gold);
-    font-size: 0.85rem;
-    opacity: 0.7;
-  }
-  .suggestion-fallacy-tag {
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-  .suggestion-text {
-    font-size: 1rem;
-    line-height: 1.6;
-    font-style: italic;
-    color: rgba(242,232,213,0.8);
-  }
-  .suggestion-peek {
-    font-size: 0.8rem;
-    line-height: 1.5;
-    color: rgba(201,168,76,0.55);
-    margin-top: 8px;
-    font-style: italic;
-    display: none;
-    border-top: 1px solid rgba(201,168,76,0.1);
-    padding-top: 8px;
-  }
-  .suggestion-peek.visible { display: block; }
+/* difficulty */
+.difficulty-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.diff-badge{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;padding:3px 10px;border-radius:20px;border:1px solid;}
+.diff-badge.hard  {color:#E05555;border-color:rgba(224,85,85,.3);background:rgba(224,85,85,.07);}
+.diff-badge.medium{color:var(--gold);border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.07);}
+.diff-badge.easy  {color:#6DBF7E;border-color:rgba(109,191,126,.3);background:rgba(109,191,126,.07);}
+.diff-note{font-size:.8rem;color:var(--muted);font-style:italic;}
 
-  .scratch-option {
-    background: transparent;
-    border: 1px dashed rgba(242,232,213,0.12);
-    border-radius: 4px;
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    text-align: center;
-    color: var(--muted);
-    font-family: 'Crimson Pro', serif;
-    font-size: 0.9rem;
-    font-style: italic;
-    width: 100%;
-  }
-  .scratch-option:hover { border-color: rgba(242,232,213,0.25); color: rgba(242,232,213,0.6); }
-  .scratch-option.selected { border-color: rgba(196,80,26,0.4); color: rgba(196,80,26,0.8); }
+/* suggestion cards */
+.suggestions-grid{display:flex;flex-direction:column;gap:10px;}
+.suggestion-card{
+  background:rgba(242,232,213,.03);border:1px solid rgba(242,232,213,.08);
+  border-radius:4px;padding:14px 16px;cursor:pointer;
+  transition:border-color .2s,background .2s;position:relative;
+}
+.suggestion-card:hover{border-color:rgba(201,168,76,.25);background:rgba(242,232,213,.05);}
+.suggestion-card.selected{border-color:rgba(201,168,76,.45);background:rgba(201,168,76,.06);}
+.suggestion-card.selected::after{content:'✓';position:absolute;top:12px;right:14px;color:var(--gold);font-size:.85rem;opacity:.7;}
+.suggestion-fallacy-tag{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px;}
+.suggestion-text{font-size:1rem;line-height:1.6;font-style:italic;color:rgba(242,232,213,.8);}
+.suggestion-peek{font-size:.8rem;line-height:1.5;color:rgba(201,168,76,.55);margin-top:8px;font-style:italic;display:none;border-top:1px solid rgba(201,168,76,.1);padding-top:8px;}
+.suggestion-peek.visible{display:block;}
 
-  /* Editor */
-  .editor-section { display: none; animation: fadeUp 0.35s ease; }
-  .editor-section.visible { display: block; }
+.scratch-option{
+  background:transparent;border:1px dashed rgba(242,232,213,.12);border-radius:4px;
+  padding:12px 16px;cursor:pointer;transition:border-color .2s;
+  text-align:center;color:var(--muted);font-family:'Crimson Pro',serif;
+  font-size:.9rem;font-style:italic;width:100%;
+}
+.scratch-option:hover{border-color:rgba(242,232,213,.25);color:rgba(242,232,213,.6);}
+.scratch-option.selected{border-color:rgba(196,80,26,.4);color:rgba(196,80,26,.8);}
 
-  .accusation-editor {
-    width: 100%;
-    background: rgba(242,232,213,0.03);
-    border: 1px solid rgba(242,232,213,0.12);
-    border-radius: 4px;
-    color: var(--parchment);
-    font-family: 'Crimson Pro', serif;
-    font-size: 1.1rem;
-    font-style: italic;
-    line-height: 1.7;
-    padding: 16px 18px;
-    resize: none;
-    min-height: 110px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .accusation-editor:focus { border-color: rgba(201,168,76,0.3); }
-  .accusation-editor::placeholder { color: rgba(242,232,213,0.18); font-style: italic; }
+/* editor */
+.editor-section{display:none;animation:fadeUp .35s ease;}
+.editor-section.visible{display:block;}
 
-  .editor-hint {
-    font-size: 0.75rem;
-    color: rgba(242,232,213,0.22);
-    font-style: italic;
-    margin-top: 6px;
-  }
+textarea{
+  width:100%;background:rgba(242,232,213,.03);border:1px solid rgba(242,232,213,.12);
+  border-radius:4px;color:var(--parchment);font-family:'Crimson Pro',serif;
+  font-size:1.05rem;font-style:italic;line-height:1.7;
+  padding:14px 16px;resize:none;outline:none;transition:border-color .2s;
+}
+textarea:focus{border-color:rgba(201,168,76,.3);}
+textarea::placeholder{color:rgba(242,232,213,.18);font-style:italic;}
 
-  /* Buttons */
-  .action-row {
-    display: flex;
-    gap: 10px;
-    margin-top: 18px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .btn {
-    font-family: 'Crimson Pro', serif;
-    font-size: 0.9rem;
-    letter-spacing: 0.04em;
-    padding: 9px 20px;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid;
-  }
-  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--blood), #6B1010);
-    border-color: rgba(139,26,26,0.5);
-    color: var(--parchment);
-    font-family: 'Uncial Antiqua', cursive;
-    font-size: 0.85rem;
-    letter-spacing: 0.06em;
-  }
-  .btn-primary:hover:not(:disabled) { box-shadow: 0 0 20px rgba(139,26,26,0.4); transform: translateY(-1px); }
-  .btn-ghost {
-    background: transparent;
-    border-color: rgba(242,232,213,0.12);
-    color: var(--muted);
-  }
-  .btn-ghost:hover:not(:disabled) { border-color: rgba(201,168,76,0.3); color: var(--gold); }
-  .btn-peek {
-    background: transparent;
-    border-color: rgba(139,26,26,0.25);
-    color: rgba(224,85,85,0.65);
-    margin-left: auto;
-  }
-  .btn-peek:hover:not(:disabled) { border-color: var(--blood); color: #E05555; background: rgba(139,26,26,0.08); }
+.editor-hint{font-size:.75rem;color:rgba(242,232,213,.22);font-style:italic;margin-top:6px;}
 
-  /* Peek / hint panels */
-  .hint-panel {
-    margin-top: 16px;
-    padding: 16px 20px;
-    background: rgba(196,80,26,0.06);
-    border-left: 2px solid rgba(196,80,26,0.4);
-    border-radius: 0 4px 4px 0;
-    display: none;
-    animation: fadeUp 0.4s ease;
-  }
-  .hint-panel.visible { display: block; }
-  .hint-panel-label {
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: rgba(196,80,26,0.6);
-    margin-bottom: 8px;
-  }
-  .hint-panel-text {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: rgba(242,232,213,0.6);
-    font-style: italic;
-  }
+/* buttons */
+.action-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center;}
+.btn{font-family:'Crimson Pro',serif;font-size:.9rem;letter-spacing:.04em;padding:9px 20px;border-radius:3px;cursor:pointer;transition:all .2s;border:1px solid;}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.btn-primary{background:linear-gradient(135deg,var(--blood),#6B1010);border-color:rgba(139,26,26,.5);color:var(--parchment);font-family:'Uncial Antiqua',cursive;font-size:.85rem;letter-spacing:.06em;}
+.btn-primary:hover:not(:disabled){box-shadow:0 0 20px rgba(139,26,26,.4);transform:translateY(-1px);}
+.btn-green{background:linear-gradient(135deg,#2A5E3A,#1A4028);border-color:rgba(90,158,111,.4);color:#8FD4A8;font-family:'Uncial Antiqua',cursive;font-size:.85rem;letter-spacing:.06em;}
+.btn-green:hover:not(:disabled){box-shadow:0 0 20px rgba(90,158,111,.3);transform:translateY(-1px);}
+.btn-ghost{background:transparent;border-color:rgba(242,232,213,.12);color:var(--muted);}
+.btn-ghost:hover:not(:disabled){border-color:rgba(201,168,76,.3);color:var(--gold);}
+.btn-peek{background:transparent;border-color:rgba(139,26,26,.25);color:rgba(224,85,85,.65);margin-left:auto;}
+.btn-peek:hover:not(:disabled){border-color:var(--blood);color:#E05555;background:rgba(139,26,26,.08);}
 
-  /* Village hint section */
-  .village-hint-section { display: none; }
-  .village-hint-section.visible { display: block; animation: fadeUp 0.5s ease; }
+/* hint panels */
+.hint-panel{margin-top:16px;padding:16px 20px;background:rgba(196,80,26,.06);border-left:2px solid rgba(196,80,26,.4);border-radius:0 4px 4px 0;display:none;animation:fadeUp .4s ease;}
+.hint-panel.visible{display:block;}
+.hint-panel-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(196,80,26,.6);margin-bottom:8px;}
+.hint-panel-text{font-size:.95rem;line-height:1.6;color:rgba(242,232,213,.6);font-style:italic;}
 
-  /* Animations */
-  @keyframes fadeUp {
-    from { opacity:0; transform:translateY(8px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
+/* village hint */
+.village-hint-section{display:none;}
+.village-hint-section.visible{display:block;animation:fadeUp .5s ease;}
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.2); border-radius: 2px; }
+/* ── LOCK SCREEN ── */
+#screen-lock{
+  background:var(--dark);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  min-height:100vh;text-align:center;padding:40px;
+}
+#screen-lock .lock-icon{font-size:4rem;margin-bottom:20px;filter:drop-shadow(0 0 20px rgba(201,168,76,.3));animation:flicker 4s ease-in-out infinite;}
+@keyframes flicker{0%,100%{filter:drop-shadow(0 0 12px rgba(201,168,76,.3));}50%{filter:drop-shadow(0 0 28px rgba(201,168,76,.6));}}
+#screen-lock .lock-title{font-family:'Uncial Antiqua',cursive;font-size:1.8rem;color:var(--gold);margin-bottom:10px;}
+#screen-lock .lock-body{font-size:1rem;color:var(--muted);font-style:italic;max-width:360px;line-height:1.7;margin-bottom:28px;}
+#screen-lock .lock-next{font-size:1.1rem;color:rgba(242,232,213,.8);margin-bottom:28px;font-style:italic;}
+
+/* ── VILLAGER VOTING SCREEN ── */
+.villager-header{margin-bottom:20px;}
+.villager-name-display{font-family:'Uncial Antiqua',cursive;font-size:1.4rem;color:var(--gold);margin-bottom:4px;}
+
+.accusation-display{
+  background:rgba(242,232,213,.03);border:1px solid rgba(242,232,213,.1);
+  border-radius:4px;padding:20px 22px;margin-bottom:22px;position:relative;
+}
+.accusation-display::before{content:'"';position:absolute;top:8px;left:14px;font-size:3rem;color:var(--blood);opacity:.15;line-height:1;font-family:Georgia,serif;}
+.accusation-display-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:8px;}
+.accusation-display-text{font-size:1.05rem;line-height:1.7;font-style:italic;}
+
+.suspect-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:6px;}
+.suspect-btn{
+  background:rgba(242,232,213,.03);border:1px solid rgba(242,232,213,.1);
+  border-radius:4px;padding:10px 12px;cursor:pointer;text-align:center;
+  font-family:'Crimson Pro',serif;font-size:.9rem;color:rgba(242,232,213,.7);
+  transition:all .2s;
+}
+.suspect-btn:hover{border-color:rgba(201,168,76,.3);color:var(--parchment);}
+.suspect-btn.selected{border-color:var(--blood);background:rgba(139,26,26,.15);color:var(--parchment);}
+
+.flaw-input{min-height:80px;margin-top:4px;}
+
+/* ── RESULTS SCREEN ── */
+.results-accusation{
+  background:rgba(242,232,213,.03);border:1px solid rgba(242,232,213,.1);
+  border-radius:4px;padding:18px 20px;margin-bottom:24px;font-style:italic;
+  font-size:1rem;line-height:1.7;
+}
+.results-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:8px;}
+
+.vote-tally{margin-bottom:24px;}
+.vote-row{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 14px;border-radius:4px;margin-bottom:6px;
+  background:rgba(242,232,213,.03);border:1px solid rgba(242,232,213,.06);
+  transition:border-color .3s;
+}
+.vote-row.winner{border-color:rgba(139,26,26,.4);background:rgba(139,26,26,.08);}
+.vote-name{flex:1;font-size:1rem;}
+.vote-bar-wrap{flex:2;background:rgba(242,232,213,.06);border-radius:2px;height:6px;overflow:hidden;}
+.vote-bar{height:100%;background:var(--blood);border-radius:2px;transition:width .8s ease;}
+.vote-count{font-size:.85rem;color:var(--muted);min-width:24px;text-align:right;}
+.werewolf-reveal-tag{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:#E05555;background:rgba(139,26,26,.2);padding:2px 8px;border-radius:2px;border:1px solid rgba(139,26,26,.3);}
+
+.flaw-responses{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.flaw-card{
+  background:rgba(242,232,213,.03);border:1px solid rgba(242,232,213,.07);
+  border-radius:4px;padding:12px 14px;
+}
+.flaw-card-name{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px;}
+.flaw-card-text{font-size:.9rem;line-height:1.55;color:rgba(242,232,213,.75);font-style:italic;}
+.flaw-card.empty .flaw-card-text{color:rgba(242,232,213,.25);}
+
+.outcome-banner{
+  text-align:center;padding:20px;border-radius:4px;border:1px solid;margin-bottom:24px;
+}
+.outcome-banner.villagers-win{border-color:rgba(90,158,111,.4);background:rgba(90,158,111,.07);}
+.outcome-banner.wolf-wins   {border-color:rgba(139,26,26,.4);background:rgba(139,26,26,.07);}
+.outcome-banner h2{font-family:'Uncial Antiqua',cursive;font-size:1.6rem;margin-bottom:6px;}
+.outcome-banner.villagers-win h2{color:#8FD4A8;}
+.outcome-banner.wolf-wins h2{color:#E05555;}
+.outcome-banner p{font-size:.9rem;color:var(--muted);font-style:italic;line-height:1.6;}
+
+.reveal-panel{
+  background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);
+  border-radius:4px;padding:18px 20px;margin-bottom:24px;
+}
+.reveal-panel-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(201,168,76,.6);margin-bottom:8px;}
+.reveal-panel-text{font-size:.95rem;line-height:1.6;color:rgba(242,232,213,.7);font-style:italic;}
+
+/* ── SETUP SCREEN ── */
+.setup-field{margin-bottom:20px;}
+.setup-field label{display:block;font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(196,80,26,.7);margin-bottom:8px;}
+.setup-input{
+  width:100%;background:rgba(242,232,213,.03);border:1px solid rgba(242,232,213,.12);
+  border-radius:4px;color:var(--parchment);font-family:'Crimson Pro',serif;
+  font-size:1rem;padding:10px 14px;outline:none;transition:border-color .2s;
+}
+.setup-input:focus{border-color:rgba(201,168,76,.3);}
+
+.player-tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.player-tag{
+  background:rgba(242,232,213,.05);border:1px solid rgba(242,232,213,.12);
+  border-radius:3px;padding:4px 10px;font-size:.85rem;color:rgba(242,232,213,.7);
+  cursor:pointer;transition:all .15s;
+}
+.player-tag:hover{border-color:var(--blood);color:#E05555;}
+
+.intro-note{font-size:.9rem;line-height:1.7;color:var(--muted);font-style:italic;margin-bottom:24px;}
+
+/* animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn {from{opacity:0;}to{opacity:1;}}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(201,168,76,.2);border-radius:2px;}
 </style>
 </head>
 <body>
-<div class="container">
 
+<!-- ═══════════════════════════════════════════
+     SCREEN 1: SETUP
+════════════════════════════════════════════ -->
+<div id="screen-setup" class="screen active">
+<div class="container">
   <div class="header">
-    <div class="title">🐺 Fallacy Wolf</div>
-    <div class="subtitle">Werewolf's Night Chamber</div>
+    <div class="game-title">🐺 Fallacy Wolf</div>
+    <div class="screen-tag">Game Setup</div>
+    <div class="header-rule"></div>
+  </div>
+
+  <p class="intro-note">
+    One player is secretly the werewolf. Each night the werewolf makes a fallacious accusation to mislead the village. Villagers must identify who the werewolf is — and why their argument was flawed. The game lasts up to 6 rounds.
+  </p>
+
+  <div class="setup-field">
+    <label>Number of players (3–12)</label>
+    <input class="setup-input" type="number" id="playerCount" min="3" max="12" value="6">
+  </div>
+
+  <div class="setup-field">
+    <label>Enter player names (press Enter after each)</label>
+    <input class="setup-input" type="text" id="playerNameInput" placeholder="Type a name and press Enter…" onkeydown="handleNameInput(event)">
+    <div class="player-tag-list" id="playerTagList"></div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-primary" onclick="startGame()">Begin the Night →</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 2: WEREWOLF NIGHT
+════════════════════════════════════════════ -->
+<div id="screen-wolf" class="screen">
+<div class="container">
+  <div class="header">
+    <div class="game-title">🐺 Fallacy Wolf</div>
+    <div class="screen-tag">Werewolf's Night Chamber</div>
     <div class="header-rule"></div>
   </div>
 
   <div class="round-tracker">
-    <span class="round-label" id="roundLabel">Round 1 of 6</span>
-    <div class="pips-row" id="pipsRow"></div>
+    <span class="round-label" id="wolfRoundLabel">Round 1 of 6</span>
+    <div class="pips-row" id="wolfPips"></div>
   </div>
 
   <div class="rule"></div>
 
-  <!-- Step 1: Pick suggestion or scratch -->
-  <div class="section">
-    <div class="difficulty-row">
-      <div class="diff-badge hard" id="diffBadge">Hard</div>
-      <div class="diff-note" id="diffNote">Villagers have no hints yet. Keep it subtle.</div>
-    </div>
-    <div class="section-label">① Choose a starting accusation — or write your own</div>
-    <div class="suggestions-grid" id="suggestionsGrid"></div>
-    <div style="margin-top:10px;">
-      <button class="scratch-option" id="scratchBtn" onclick="selectScratch()">
-        ✦ Write from scratch
-      </button>
-    </div>
+  <div class="difficulty-row">
+    <div class="diff-badge hard" id="diffBadge">Hard</div>
+    <div class="diff-note" id="diffNote">Villagers have no hints yet. Keep it subtle.</div>
   </div>
 
-  <!-- Step 2: Edit & deliver -->
+  <div class="section-label">① Choose a starting accusation — or write your own</div>
+  <div class="suggestions-grid" id="suggestionsGrid"></div>
+  <div style="margin-top:10px;">
+    <button class="scratch-option" id="scratchBtn" onclick="selectScratch()">✦ Write from scratch</button>
+  </div>
+
   <div class="editor-section" id="editorSection">
     <div class="rule"></div>
     <div class="section-label">② Refine your words — then read aloud to the village</div>
-    <textarea
-      class="accusation-editor"
-      id="accusationEditor"
-      rows="4"
-      placeholder="Craft your accusation here…"
-    ></textarea>
+    <textarea id="accusationEditor" rows="4" placeholder="Craft your accusation here…"></textarea>
     <div class="editor-hint">Speak calmly. The more reasonable you sound, the safer you are.</div>
-
     <div class="action-row">
-      <button class="btn btn-primary" onclick="advanceRound()">Dawn has come →</button>
-      <button class="btn btn-ghost" onclick="resetSelection()">← Back to suggestions</button>
+      <button class="btn btn-primary" onclick="wolfDone()">Dawn has come →</button>
+      <button class="btn btn-ghost" onclick="resetWolfSelection()">← Back</button>
       <button class="btn btn-peek" id="peekBtn" onclick="togglePeek()">👁 Peek at why this works</button>
     </div>
-
     <div class="hint-panel" id="peekPanel">
       <div class="hint-panel-label">🔮 For your eyes only — the logical flaw</div>
       <div class="hint-panel-text" id="peekText"></div>
     </div>
   </div>
+</div>
+</div>
 
-  <!-- Village hint (shown after dawn — read aloud to village) -->
-  <div class="village-hint-section" id="villageHintSection">
+<!-- ═══════════════════════════════════════════
+     SCREEN 3: LOCK / PASS
+════════════════════════════════════════════ -->
+<div id="screen-lock" class="screen">
+  <div class="lock-icon">🕯</div>
+  <div class="lock-title">Pass the torch</div>
+  <div class="lock-body" id="lockBody">Hand the computer to the next villager. Don't let anyone see the screen while you walk.</div>
+  <div class="lock-next" id="lockNext">Next: —</div>
+  <button class="btn btn-primary" onclick="lockConfirm()">I am ready →</button>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 4: VILLAGER VOTING
+════════════════════════════════════════════ -->
+<div id="screen-villager" class="screen">
+<div class="container">
+  <div class="header">
+    <div class="game-title">🐺 Fallacy Wolf</div>
+    <div class="screen-tag" id="villagerScreenTag">Villager — Round 1</div>
+    <div class="header-rule"></div>
+  </div>
+
+  <div class="villager-header">
+    <div class="villager-name-display" id="villagerNameDisplay">—</div>
+    <div style="font-size:.8rem;color:var(--muted);font-style:italic;">Your vote is private. No one else will see your choice until all votes are in.</div>
+  </div>
+
+  <div class="accusation-display">
+    <div class="accusation-display-label">Tonight's accusation — read carefully</div>
+    <div class="accusation-display-text" id="accusationDisplayText">—</div>
+  </div>
+
+  <div class="section-label">Who do you think the werewolf is?</div>
+  <div class="suspect-grid" id="suspectGrid"></div>
+
+  <div class="rule"></div>
+
+  <div class="section-label" style="margin-top:0;">What's wrong with this argument? Explain the flaw in your own words.</div>
+  <textarea class="flaw-input" id="flawInput" rows="3" placeholder="Describe why this argument is logically flawed…"></textarea>
+
+  <div class="action-row" style="margin-top:14px;">
+    <button class="btn btn-green" onclick="submitVillagerVote()">Submit my vote →</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 5: RESULTS
+════════════════════════════════════════════ -->
+<div id="screen-results" class="screen">
+<div class="container">
+  <div class="header">
+    <div class="game-title">🐺 Fallacy Wolf</div>
+    <div class="screen-tag" id="resultsTag">Round 1 — Results</div>
+    <div class="header-rule"></div>
+  </div>
+
+  <!-- Outcome banner -->
+  <div class="outcome-banner" id="outcomeBanner">
+    <h2 id="outcomeTitle">—</h2>
+    <p id="outcomeBody">—</p>
+  </div>
+
+  <!-- The accusation -->
+  <div class="section-label">Tonight's accusation</div>
+  <div class="results-accusation" id="resultsAccusation">—</div>
+
+  <!-- Fallacy reveal -->
+  <div class="reveal-panel" id="fallacyReveal">
+    <div class="reveal-panel-label">🔮 The logical flaw revealed</div>
+    <div class="reveal-panel-text" id="fallacyRevealText">—</div>
+  </div>
+
+  <!-- Vote tally -->
+  <div class="section-label">Vote tally</div>
+  <div class="vote-tally" id="voteTally"></div>
+
+  <!-- Village hint -->
+  <div id="villageHintSection" class="village-hint-section">
     <div class="rule"></div>
-    <div class="section-label">Village clue — read this aloud after the vote</div>
+    <div class="section-label">🕯 Village clue for next round</div>
     <div class="hint-panel visible">
-      <div class="hint-panel-label">🕯 Round <span id="hintRoundNum"></span> hint for villagers</div>
+      <div class="hint-panel-label">Calibration hint — Round <span id="hintRoundNum"></span></div>
       <div class="hint-panel-text" id="villageHintText"></div>
     </div>
   </div>
 
+  <!-- Flaw responses -->
+  <div class="rule"></div>
+  <div class="section-label">What the village said about the flaw</div>
+  <div class="flaw-responses" id="flawResponses"></div>
+
+  <div class="action-row" style="margin-top:24px;">
+    <button class="btn btn-primary" id="nextRoundBtn" onclick="nextRound()">Next Night →</button>
+    <button class="btn btn-ghost" id="endGameBtn" onclick="endGame()" style="display:none;">End Game</button>
+  </div>
+</div>
 </div>
 
 <script>
-// ─────────────────────────────────────────────
-// ACCUSATION BANKS
-// difficulty: hard (rounds 1-2), medium (3-4), easy (5-6)
-// fallacy: 'eo' = Either/Or   'ss' = Slippery Slope
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+
 const BANKS = {
-  hard: [
-    {
-      text: "Either we drive out those who consort with the forest at night, or we accept that the deaths will continue. There is no middle path when the stakes are this grave.",
-      fallacy: "eo",
-      explanation: "Either/Or: Presents only two options (banish OR accept deaths) when many responses exist — investigations, curfews, watchkeeping. The urgency makes the false choice feel necessary."
-    },
-    {
-      text: "We can either trust the Weaver's account completely, or admit that none of us are truly safe tonight. I see no third road.",
-      fallacy: "eo",
-      explanation: "Either/Or: 'Trust fully OR no one is safe' hides partial trust, independent verification, or cautious skepticism as viable middle positions."
-    },
-    {
-      text: "If we do not address what happened at the mill this week, people will stop trusting the council's word. Once that trust is gone, no one will follow the harvest rules, and by winter we will have nothing left to share.",
-      fallacy: "ss",
-      explanation: "Slippery Slope: Moves from 'not addressing the mill' to 'no harvest sharing by winter' through several unjustified leaps. Each step assumes the worst and ignores likely stabilizing actions."
-    },
-    {
-      text: "Allowing strangers past the third night has always led to theft, and theft leads to reprisals, and reprisals to feuds that outlast a generation. We have seen this before in other villages.",
-      fallacy: "ss",
-      explanation: "Slippery Slope: 'Strangers staying' leads inevitably to 'generational feuds' — each step is stated as certainty rather than possibility, skipping over obvious interventions."
-    },
-    {
-      text: "Once word spreads that we let this go unpunished, travelers from every road will think us weak. They will test us again and again, until we cannot protect even our own children.",
-      fallacy: "ss",
-      explanation: "Slippery Slope: One unpunished act leads necessarily to children being endangered — a dramatic chain treated as inevitable rather than speculative."
-    },
-    {
-      text: "If the grain store is not sealed off from the Tanner's quarter tonight, we face either plague or famine by spring. Those are the only two roads I can see from here.",
-      fallacy: "eo",
-      explanation: "Either/Or: Forces a choice between plague and famine as if these are the only outcomes, ignoring partial measures, delay, or the possibility of neither occurring."
-    },
+  hard:[
+    {text:"Either we drive out those who consort with the forest at night, or we accept that the deaths will continue. There is no middle path when the stakes are this grave.",fallacy:"eo",explanation:"Either/Or: Presents only two options (banish OR accept deaths) when many responses exist — investigations, curfews, collective watchkeeping. The urgency makes the false choice feel necessary."},
+    {text:"We can either trust the Weaver's account completely, or admit that none of us are truly safe tonight. I see no third road.",fallacy:"eo",explanation:"Either/Or: 'Trust fully OR no one is safe' hides partial trust, independent verification, or cautious skepticism as viable middle positions."},
+    {text:"If we do not address what happened at the mill this week, people will stop trusting the council's word. Once that trust is gone, no one will follow the harvest rules, and by winter we will have nothing left to share.",fallacy:"ss",explanation:"Slippery Slope: Moves from 'not addressing the mill' to 'no harvest sharing by winter' through several unjustified leaps. Each step assumes the worst and ignores likely stabilizing actions."},
+    {text:"Allowing strangers past the third night has always led to theft, and theft leads to reprisals, and reprisals to feuds that outlast a generation. We have seen this before in other villages.",fallacy:"ss",explanation:"Slippery Slope: 'Strangers staying' leads inevitably to 'generational feuds' — each step is stated as certainty rather than possibility, skipping over obvious interventions."},
+    {text:"Once word spreads that we let this go unpunished, travelers from every road will think us weak. They will test us again and again, until we cannot protect even our own children.",fallacy:"ss",explanation:"Slippery Slope: One unpunished act leads necessarily to children being endangered — a dramatic chain treated as inevitable rather than speculative."},
+    {text:"If the grain store is not sealed off from the Tanner's quarter tonight, we face either plague or famine by spring. Those are the only two roads I can see from here.",fallacy:"eo",explanation:"Either/Or: Forces a choice between plague and famine as if these are the only outcomes, ignoring partial measures, delay, or the possibility of neither occurring."},
   ],
-  medium: [
-    {
-      text: "The way I see it, we either name a culprit tonight, or we allow whoever did this to believe they have won. Those are the only two roads before us.",
-      fallacy: "eo",
-      explanation: "Either/Or: 'Name someone tonight or concede defeat' ignores gathering more evidence, waiting, or taking preventive action without a formal accusation."
-    },
-    {
-      text: "We must choose: hold those responsible to account now, or watch the rot spread to every household. Half-measures have never saved a village.",
-      fallacy: "eo",
-      explanation: "Either/Or: 'Immediate accountability or total ruin' erases partial accountability, delayed action, or alternative remedies — all of which exist."
-    },
-    {
-      text: "If we excuse this behavior once, people will begin to feel entitled to make their own rules. Soon the harvest agreements will mean nothing, and we will return to the fighting that plagued our grandparents.",
-      fallacy: "ss",
-      explanation: "Slippery Slope: One excused act leads to total social breakdown and historical warfare — the chain is dramatic and each step assumes the worst without justification."
-    },
-    {
-      text: "One broken fence becomes two, two becomes a gap in the field wall, and a gap in the field wall invites every wolf and thief within ten miles. This is how villages lose everything.",
-      fallacy: "ss",
-      explanation: "Slippery Slope: A single broken fence leads inevitably to total loss — the argument skips the obvious: that anyone would notice and repair the problem long before catastrophe."
-    },
+  medium:[
+    {text:"The way I see it, we either name a culprit tonight, or we allow whoever did this to believe they have won. Those are the only two roads before us.",fallacy:"eo",explanation:"Either/Or: 'Name someone tonight or concede defeat' ignores gathering more evidence, waiting, or taking preventive action without a formal accusation."},
+    {text:"We must choose: hold those responsible to account now, or watch the rot spread to every household. Half-measures have never saved a village.",fallacy:"eo",explanation:"Either/Or: 'Immediate accountability or total ruin' erases partial accountability, delayed action, or alternative remedies — all of which exist."},
+    {text:"If we excuse this behavior once, people will begin to feel entitled to make their own rules. Soon the harvest agreements will mean nothing, and we will return to the fighting that plagued our grandparents.",fallacy:"ss",explanation:"Slippery Slope: One excused act leads to total social breakdown and historical warfare — each step assumes the worst without justification."},
+    {text:"One broken fence becomes two, two becomes a gap in the field wall, and a gap in the field wall invites every wolf and thief within ten miles. This is how villages lose everything.",fallacy:"ss",explanation:"Slippery Slope: A single broken fence leads inevitably to total loss — skips over the obvious: that anyone would notice and repair it long before catastrophe."},
   ],
-  easy: [
-    {
-      text: "You are either with us in protecting this village, or you are against it. There is no room for doubt when lives are at stake.",
-      fallacy: "eo",
-      explanation: "Either/Or: Classic false dilemma — 'with us or against us' erases nuanced positions like 'uncertain', 'wanting more evidence', or 'supportive but cautious'."
-    },
-    {
-      text: "Either we banish the problem tonight, or the problem banishes us. It is as simple as that.",
-      fallacy: "eo",
-      explanation: "Either/Or: 'Banish or be banished' is a clear false dilemma — obvious alternatives include partial action, investigation, or gradual community deliberation."
-    },
-    {
-      text: "If we allow this one exception, people will ask for another, then another, until every rule we have dissolves completely and we have nothing left to stand on.",
-      fallacy: "ss",
-      explanation: "Slippery Slope: 'One exception leads to total rule collapse' — the chain is explicit enough that the unjustified leaps are more visible than in harder variants."
-    },
-    {
-      text: "Let one person off tonight, and by next season half the village will believe they owe nothing to anyone. That is how communities fall apart — one concession at a time.",
-      fallacy: "ss",
-      explanation: "Slippery Slope: 'One person unpunished → half the village abandons obligations' assumes social contagion at each step without justification."
-    },
+  easy:[
+    {text:"You are either with us in protecting this village, or you are against it. There is no room for doubt when lives are at stake.",fallacy:"eo",explanation:"Either/Or: Classic false dilemma — 'with us or against us' erases nuanced positions like 'uncertain', 'wanting more evidence', or 'supportive but cautious'."},
+    {text:"Either we banish the problem tonight, or the problem banishes us. It is as simple as that.",fallacy:"eo",explanation:"Either/Or: 'Banish or be banished' is a clear false dilemma with obvious alternatives including partial action, investigation, or gradual deliberation."},
+    {text:"If we allow this one exception, people will ask for another, then another, until every rule we have dissolves completely and we have nothing left to stand on.",fallacy:"ss",explanation:"Slippery Slope: 'One exception leads to total rule collapse' — the chain is explicit enough that the unjustified leaps are visible."},
+    {text:"Let one person off tonight, and by next season half the village will believe they owe nothing to anyone. That is how communities fall apart — one concession at a time.",fallacy:"ss",explanation:"Slippery Slope: 'One person unpunished → half the village abandons obligations' assumes social contagion at each step without justification."},
   ]
 };
 
-// ─────────────────────────────────────────────
-// VILLAGER HINTS — escalating across 6 rounds
-// Shown to village AFTER each wrong vote
-// ─────────────────────────────────────────────
 const VILLAGER_HINTS = [
   "Consider whether the argument is assuming something it has not proven.",
   "Ask yourself: are there options or outcomes this argument is quietly ignoring?",
   "Notice whether the argument makes a large leap from a small starting point.",
   "Think about how many steps separate the first claim from the final conclusion — is each step truly justified?",
-  "Does this argument present only two choices? Could there be a third, or a fourth?",
+  "Does this argument present only two choices? Could there be a third or a fourth?",
   "Look closely at the chain of events described. Is each step inevitable, or just one of many possibilities?"
 ];
 
-// ─────────────────────────────────────────────
-// State
-// ─────────────────────────────────────────────
-const state = {
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+
+let G = {
+  players: [],          // all player names
+  werewolfIdx: null,    // index into players
   round: 1,
   maxRounds: 6,
-  selectedIndex: null,   // index into currentSuggestions, or -1 for scratch
+
+  // wolf's chosen accusation this round
+  currentAccusation: null,   // { text, fallacy, explanation }
+
+  // villager rotation this round
+  villagerQueue: [],    // names of non-wolf players in order
+  villagerCursor: 0,    // which villager is currently voting
+  votes: {},            // { playerName: suspectName }
+  flaws: {},            // { playerName: flawText }
+
+  wolfSelection: null,  // index into currentSuggestions or -1
   currentSuggestions: [],
   peekVisible: false,
+
+  // lock screen state
+  lockTarget: null,     // name of who is being handed the computer
+  lockCallback: null,   // function to call after lock confirm
 };
 
-// ─────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────
-function getDifficulty(r) {
-  if (r <= 2) return 'hard';
-  if (r <= 4) return 'medium';
-  return 'easy';
+// ═══════════════════════════════════════════
+// SETUP
+// ═══════════════════════════════════════════
+
+function handleNameInput(e) {
+  if (e.key !== 'Enter') return;
+  const input = document.getElementById('playerNameInput');
+  const name = input.value.trim();
+  if (!name || G.players.includes(name)) { input.value=''; return; }
+  G.players.push(name);
+  input.value = '';
+  renderPlayerTags();
 }
 
-function getDiffNote(r) {
-  if (r <= 2) return 'Villagers have no hints yet. Keep it subtle.';
-  if (r <= 4) return 'Villagers have seen a clue. Stay careful.';
+function renderPlayerTags() {
+  const list = document.getElementById('playerTagList');
+  list.innerHTML = '';
+  G.players.forEach((name, i) => {
+    const tag = document.createElement('div');
+    tag.className = 'player-tag';
+    tag.textContent = name + ' ✕';
+    tag.title = 'Remove ' + name;
+    tag.onclick = () => { G.players.splice(i, 1); renderPlayerTags(); };
+    list.appendChild(tag);
+  });
+}
+
+function startGame() {
+  const countEl = document.getElementById('playerCount');
+  const count = parseInt(countEl.value);
+  // Use entered names, or generate generic ones
+  if (G.players.length < 2) {
+    for (let i = G.players.length + 1; i <= Math.max(count, 3); i++) {
+      G.players.push('Player ' + i);
+    }
+  }
+  // Assign werewolf randomly
+  G.werewolfIdx = Math.floor(Math.random() * G.players.length);
+  // Start round 1
+  beginNightPhase();
+}
+
+// ═══════════════════════════════════════════
+// NIGHT PHASE (WEREWOLF)
+// ═══════════════════════════════════════════
+
+function beginNightPhase() {
+  G.votes = {};
+  G.flaws = {};
+  G.wolfSelection = null;
+  G.peekVisible = false;
+  G.currentAccusation = null;
+
+  renderWolfScreen();
+
+  // Lock → wolf
+  const wolfName = G.players[G.werewolfIdx];
+  showLock(
+    `Hand the computer to <strong>${wolfName}</strong>.<br>This is the werewolf's private screen.`,
+    wolfName,
+    () => showScreen('screen-wolf')
+  );
+}
+
+function renderWolfScreen() {
+  document.getElementById('wolfRoundLabel').textContent = `Round ${G.round} of ${G.maxRounds}`;
+  renderPips('wolfPips', G.round, G.maxRounds);
+
+  const diff = getDifficulty(G.round);
+  const badge = document.getElementById('diffBadge');
+  badge.textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
+  badge.className = 'diff-badge ' + diff;
+  document.getElementById('diffNote').textContent = getDiffNote(G.round);
+
+  G.currentSuggestions = pickSuggestions(diff);
+  renderSuggestions();
+  resetWolfSelection();
+}
+
+function getDifficulty(r){ return r<=2?'hard':r<=4?'medium':'easy'; }
+function getDiffNote(r){
+  if(r<=2) return 'Villagers have no hints yet. Keep it subtle.';
+  if(r<=4) return 'Villagers have seen a clue. Stay careful.';
   return 'Villagers are calibrated. Make it count.';
 }
 
 function pickSuggestions(diff) {
   const pool = BANKS[diff];
-  const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
-  const eos = shuffle(pool.filter(x => x.fallacy === 'eo'));
-  const sss = shuffle(pool.filter(x => x.fallacy === 'ss'));
+  const shuffle = a => [...a].sort(()=>Math.random()-.5);
+  const eos = shuffle(pool.filter(x=>x.fallacy==='eo'));
+  const sss = shuffle(pool.filter(x=>x.fallacy==='ss'));
   const picks = [eos[0], sss[0]].filter(Boolean);
-  const remaining = shuffle(pool.filter(x => !picks.includes(x)));
-  if (remaining.length && Math.random() > 0.4) picks.push(remaining[0]);
+  const rest = shuffle(pool.filter(x=>!picks.includes(x)));
+  if(rest.length && Math.random()>.4) picks.push(rest[0]);
   return shuffle(picks);
 }
 
-function fallacyLabel(code) {
-  return code === 'eo' ? 'Either / Or' : 'Slippery Slope';
-}
-
-// ─────────────────────────────────────────────
-// Render
-// ─────────────────────────────────────────────
-function renderPips() {
-  const row = document.getElementById('pipsRow');
-  row.innerHTML = '';
-  for (let i = 1; i <= state.maxRounds; i++) {
-    const pip = document.createElement('div');
-    pip.className = 'pip' + (i < state.round ? ' done' : i === state.round ? ' active' : '');
-    row.appendChild(pip);
-  }
-  document.getElementById('roundLabel').textContent = `Round ${state.round} of ${state.maxRounds}`;
-}
-
-function renderDifficulty() {
-  const diff = getDifficulty(state.round);
-  const badge = document.getElementById('diffBadge');
-  badge.textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
-  badge.className = 'diff-badge ' + diff;
-  document.getElementById('diffNote').textContent = getDiffNote(state.round);
-}
-
 function renderSuggestions() {
-  const diff = getDifficulty(state.round);
-  state.currentSuggestions = pickSuggestions(diff);
-  state.selectedIndex = null;
-
   const grid = document.getElementById('suggestionsGrid');
   grid.innerHTML = '';
-
-  state.currentSuggestions.forEach((item, i) => {
+  G.currentSuggestions.forEach((item, i) => {
     const card = document.createElement('div');
     card.className = 'suggestion-card';
-    card.id = 'sug-' + i;
+    card.id = 'sug-'+i;
     card.onclick = () => selectSuggestion(i);
 
     const tag = document.createElement('div');
     tag.className = 'suggestion-fallacy-tag';
-    tag.textContent = fallacyLabel(item.fallacy);
+    tag.textContent = item.fallacy==='eo' ? 'Either / Or' : 'Slippery Slope';
 
     const text = document.createElement('div');
     text.className = 'suggestion-text';
@@ -567,119 +627,320 @@ function renderSuggestions() {
 
     const peek = document.createElement('div');
     peek.className = 'suggestion-peek';
-    peek.id = 'sugPeek-' + i;
-    peek.textContent = '🔮 ' + item.explanation;
+    peek.id = 'sugPeek-'+i;
+    peek.textContent = '🔮 '+item.explanation;
 
-    card.appendChild(tag);
-    card.appendChild(text);
-    card.appendChild(peek);
+    card.append(tag, text, peek);
     grid.appendChild(card);
   });
 }
 
-// ─────────────────────────────────────────────
-// Interaction
-// ─────────────────────────────────────────────
-function selectSuggestion(index) {
-  state.selectedIndex = index;
-  state.peekVisible = false;
-
-  state.currentSuggestions.forEach((_, i) => {
-    document.getElementById('sug-' + i).classList.toggle('selected', i === index);
-    document.getElementById('sugPeek-' + i).classList.remove('visible');
+function selectSuggestion(i) {
+  G.wolfSelection = i;
+  G.peekVisible = false;
+  G.currentSuggestions.forEach((_,j) => {
+    document.getElementById('sug-'+j).classList.toggle('selected', j===i);
+    document.getElementById('sugPeek-'+j).classList.remove('visible');
   });
   document.getElementById('scratchBtn').classList.remove('selected');
-
-  const item = state.currentSuggestions[index];
+  const item = G.currentSuggestions[i];
   document.getElementById('accusationEditor').value = item.text;
   document.getElementById('peekText').textContent = item.explanation;
   document.getElementById('peekPanel').classList.remove('visible');
   document.getElementById('peekBtn').textContent = '👁 Peek at why this works';
-
-  showEditor();
+  document.getElementById('editorSection').classList.add('visible');
+  setTimeout(()=>document.getElementById('accusationEditor').focus(),50);
 }
 
 function selectScratch() {
-  state.selectedIndex = -1;
-  state.peekVisible = false;
-  state.currentSuggestions.forEach((_, i) => {
-    document.getElementById('sug-' + i).classList.remove('selected');
-    document.getElementById('sugPeek-' + i).classList.remove('visible');
+  G.wolfSelection = -1;
+  G.peekVisible = false;
+  G.currentSuggestions.forEach((_,j) => {
+    document.getElementById('sug-'+j).classList.remove('selected');
+    document.getElementById('sugPeek-'+j).classList.remove('visible');
   });
   document.getElementById('scratchBtn').classList.add('selected');
   document.getElementById('accusationEditor').value = '';
   document.getElementById('peekText').textContent = 'No explanation — you wrote this one yourself.';
   document.getElementById('peekPanel').classList.remove('visible');
   document.getElementById('peekBtn').textContent = '👁 Peek at why this works';
-  showEditor();
-}
-
-function showEditor() {
   document.getElementById('editorSection').classList.add('visible');
-  setTimeout(() => document.getElementById('accusationEditor').focus(), 50);
+  setTimeout(()=>document.getElementById('accusationEditor').focus(),50);
 }
 
-function resetSelection() {
-  state.selectedIndex = null;
-  state.peekVisible = false;
+function resetWolfSelection() {
+  G.wolfSelection = null;
+  G.peekVisible = false;
   document.getElementById('editorSection').classList.remove('visible');
   document.getElementById('peekPanel').classList.remove('visible');
-  state.currentSuggestions.forEach((_, i) => {
-    document.getElementById('sug-' + i).classList.remove('selected');
+  G.currentSuggestions.forEach((_,j)=>{
+    const el = document.getElementById('sug-'+j);
+    if(el) el.classList.remove('selected');
   });
   document.getElementById('scratchBtn').classList.remove('selected');
 }
 
 function togglePeek() {
-  state.peekVisible = !state.peekVisible;
-  document.getElementById('peekPanel').classList.toggle('visible', state.peekVisible);
-  document.getElementById('peekBtn').textContent = state.peekVisible
-    ? '👁 Hide explanation'
-    : '👁 Peek at why this works';
-  if (state.selectedIndex >= 0) {
-    const el = document.getElementById('sugPeek-' + state.selectedIndex);
-    if (el) el.classList.toggle('visible', state.peekVisible);
+  G.peekVisible = !G.peekVisible;
+  document.getElementById('peekPanel').classList.toggle('visible', G.peekVisible);
+  document.getElementById('peekBtn').textContent = G.peekVisible ? '👁 Hide explanation' : '👁 Peek at why this works';
+  if(G.wolfSelection >= 0) {
+    const el = document.getElementById('sugPeek-'+G.wolfSelection);
+    if(el) el.classList.toggle('visible', G.peekVisible);
   }
 }
 
-function advanceRound() {
+function wolfDone() {
   const text = document.getElementById('accusationEditor').value.trim();
-  if (!text) {
+  if(!text) {
     const ed = document.getElementById('accusationEditor');
-    ed.style.borderColor = 'rgba(139,26,26,0.7)';
-    setTimeout(() => { ed.style.borderColor = ''; }, 1800);
+    ed.style.borderColor='rgba(139,26,26,.7)';
+    setTimeout(()=>{ed.style.borderColor='';},1800);
+    return;
+  }
+  // Store the accusation
+  let explanation = 'No explanation available.';
+  if(G.wolfSelection >= 0 && G.currentSuggestions[G.wolfSelection]) {
+    explanation = G.currentSuggestions[G.wolfSelection].explanation;
+  }
+  G.currentAccusation = { text, explanation };
+
+  // Build villager queue (everyone except the werewolf, shuffled)
+  G.villagerQueue = G.players
+    .filter((_,i) => i !== G.werewolfIdx);
+  // Shuffle so order is unpredictable
+  G.villagerQueue = G.villagerQueue.sort(()=>Math.random()-.5);
+  G.villagerCursor = 0;
+
+  // Hand to first villager
+  beginVillagerTurn();
+}
+
+// ═══════════════════════════════════════════
+// VILLAGER PHASE
+// ═══════════════════════════════════════════
+
+function beginVillagerTurn() {
+  const name = G.villagerQueue[G.villagerCursor];
+  const isFirst = G.villagerCursor === 0;
+  const lockFrom = isFirst ? G.players[G.werewolfIdx] : G.villagerQueue[G.villagerCursor-1];
+
+  renderVillagerScreen(name);
+
+  showLock(
+    `Hand the computer to <strong>${name}</strong>.<br>Don't let anyone see the screen while passing.`,
+    name,
+    () => showScreen('screen-villager')
+  );
+}
+
+function renderVillagerScreen(name) {
+  document.getElementById('villagerScreenTag').textContent = `Villager — Round ${G.round}`;
+  document.getElementById('villagerNameDisplay').textContent = name;
+  document.getElementById('accusationDisplayText').textContent = G.currentAccusation.text;
+
+  // Suspect grid — everyone except self
+  const grid = document.getElementById('suspectGrid');
+  grid.innerHTML = '';
+  G.players.forEach(p => {
+    if(p === name) return; // can't vote for yourself
+    const btn = document.createElement('button');
+    btn.className = 'suspect-btn';
+    btn.textContent = p;
+    btn.dataset.suspect = p;
+    btn.onclick = () => {
+      grid.querySelectorAll('.suspect-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+    };
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('flawInput').value = '';
+}
+
+function submitVillagerVote() {
+  const name = G.villagerQueue[G.villagerCursor];
+  const selectedBtn = document.querySelector('#suspectGrid .suspect-btn.selected');
+  const flawText = document.getElementById('flawInput').value.trim();
+
+  if(!selectedBtn) {
+    document.getElementById('suspectGrid').style.outline = '1px solid rgba(139,26,26,.6)';
+    setTimeout(()=>{document.getElementById('suspectGrid').style.outline='';},1500);
     return;
   }
 
-  // Show village hint for the round that just happened
-  const hintIndex = Math.min(state.round - 1, VILLAGER_HINTS.length - 1);
-  document.getElementById('hintRoundNum').textContent = state.round;
-  document.getElementById('villageHintText').textContent = VILLAGER_HINTS[hintIndex];
-  const hintSection = document.getElementById('villageHintSection');
-  hintSection.classList.add('visible');
-  setTimeout(() => hintSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 150);
+  G.votes[name] = selectedBtn.dataset.suspect;
+  G.flaws[name] = flawText || '(no explanation given)';
 
-  // Advance round
-  if (state.round < state.maxRounds) {
-    state.round++;
+  G.villagerCursor++;
+
+  if(G.villagerCursor < G.villagerQueue.length) {
+    beginVillagerTurn();
   } else {
-    document.getElementById('roundLabel').textContent = '🐺 The wolf has survived all six nights.';
+    // All voted — show results to everyone
+    showLock(
+      `All villagers have voted.<br>Bring everyone together to see the results.`,
+      'Everyone',
+      () => showResults()
+    );
   }
-
-  // Reset for next round
-  resetSelection();
-  renderPips();
-  renderDifficulty();
-  renderSuggestions();
-  document.getElementById('editorSection').classList.remove('visible');
 }
 
-// ─────────────────────────────────────────────
-// Boot
-// ─────────────────────────────────────────────
-renderPips();
-renderDifficulty();
-renderSuggestions();
+// ═══════════════════════════════════════════
+// RESULTS
+// ═══════════════════════════════════════════
+
+function showResults() {
+  const wolfName = G.players[G.werewolfIdx];
+
+  // Tally votes
+  const tally = {};
+  G.players.forEach(p => { tally[p] = 0; });
+  Object.values(G.votes).forEach(v => { tally[v] = (tally[v]||0)+1; });
+
+  // Who got the most votes?
+  const topVotes = Math.max(...Object.values(tally));
+  const topNames = Object.keys(tally).filter(k=>tally[k]===topVotes);
+  const villageGuessedCorrectly = topNames.includes(wolfName) && topVotes > 0;
+
+  // Outcome
+  const banner = document.getElementById('outcomeBanner');
+  const title  = document.getElementById('outcomeTitle');
+  const body   = document.getElementById('outcomeBody');
+
+  if(villageGuessedCorrectly) {
+    banner.className = 'outcome-banner villagers-win';
+    title.textContent = '🌅 The Village Prevails!';
+    body.textContent  = `The village identified ${wolfName} as the werewolf. Now discuss whether the argument's flaw was correctly named.`;
+  } else {
+    banner.className = 'outcome-banner wolf-wins';
+    title.textContent = '🐺 The Wolf Survives';
+    body.textContent  = `The village voted for ${topNames.join(' or ')}, but the werewolf was ${wolfName}. The wolf lives another night.`;
+  }
+
+  // Accusation + reveal
+  document.getElementById('resultsAccusation').textContent = G.currentAccusation.text;
+  document.getElementById('fallacyRevealText').textContent = G.currentAccusation.explanation;
+  document.getElementById('resultsTag').textContent = `Round ${G.round} — Results`;
+
+  // Vote tally bars
+  const tallyEl = document.getElementById('voteTally');
+  tallyEl.innerHTML = '';
+  const total = Object.values(tally).reduce((a,b)=>a+b,0);
+  Object.entries(tally)
+    .sort((a,b)=>b[1]-a[1])
+    .filter(([,v])=>v>0)
+    .forEach(([name, count]) => {
+      const row = document.createElement('div');
+      row.className = 'vote-row' + (name===wolfName ? ' winner' : '');
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'vote-name';
+      nameEl.textContent = name;
+
+      if(name===wolfName) {
+        const tag = document.createElement('span');
+        tag.className = 'werewolf-reveal-tag';
+        tag.textContent = '🐺 werewolf';
+        tag.style.marginLeft = '8px';
+        nameEl.appendChild(tag);
+      }
+
+      const barWrap = document.createElement('div');
+      barWrap.className = 'vote-bar-wrap';
+      const bar = document.createElement('div');
+      bar.className = 'vote-bar';
+      bar.style.width = '0%';
+      barWrap.appendChild(bar);
+      setTimeout(()=>{ bar.style.width = Math.round((count/total)*100)+'%'; }, 100);
+
+      const countEl = document.createElement('div');
+      countEl.className = 'vote-count';
+      countEl.textContent = count;
+
+      row.append(nameEl, barWrap, countEl);
+      tallyEl.appendChild(row);
+    });
+
+  // Flaw responses
+  const flawEl = document.getElementById('flawResponses');
+  flawEl.innerHTML = '';
+  G.villagerQueue.forEach(name => {
+    const card = document.createElement('div');
+    const flaw = G.flaws[name] || '';
+    card.className = 'flaw-card' + (!flaw || flaw==='(no explanation given)' ? ' empty' : '');
+    card.innerHTML = `<div class="flaw-card-name">${name}</div><div class="flaw-card-text">${flaw || '(no explanation given)'}</div>`;
+    flawEl.appendChild(card);
+  });
+
+  // Village hint (shown if wrong, helps next round)
+  const hintIdx = Math.min(G.round-1, VILLAGER_HINTS.length-1);
+  const hintSection = document.getElementById('villageHintSection');
+  if(!villageGuessedCorrectly && G.round < G.maxRounds) {
+    document.getElementById('hintRoundNum').textContent = G.round;
+    document.getElementById('villageHintText').textContent = VILLAGER_HINTS[hintIdx];
+    hintSection.classList.add('visible');
+  } else {
+    hintSection.classList.remove('visible');
+  }
+
+  // Next round / end buttons
+  const isLastRound = G.round >= G.maxRounds;
+  const gameOver = villageGuessedCorrectly || isLastRound;
+  document.getElementById('nextRoundBtn').style.display = gameOver ? 'none' : '';
+  document.getElementById('endGameBtn').style.display = gameOver ? '' : 'none';
+
+  showScreen('screen-results');
+}
+
+function nextRound() {
+  G.round++;
+  beginNightPhase();
+}
+
+function endGame() {
+  // Could show a final summary — for now just restart
+  if(confirm('Start a new game?')) location.reload();
+}
+
+// ═══════════════════════════════════════════
+// LOCK SCREEN
+// ═══════════════════════════════════════════
+
+function showLock(bodyHTML, nextName, callback) {
+  document.getElementById('lockBody').innerHTML = bodyHTML;
+  document.getElementById('lockNext').textContent = `Next: ${nextName}`;
+  G.lockCallback = callback;
+  showScreen('screen-lock');
+}
+
+function lockConfirm() {
+  if(G.lockCallback) G.lockCallback();
+}
+
+// ═══════════════════════════════════════════
+// SCREEN ROUTER
+// ═══════════════════════════════════════════
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════
+// SHARED HELPERS
+// ═══════════════════════════════════════════
+
+function renderPips(containerId, round, max) {
+  const row = document.getElementById(containerId);
+  row.innerHTML = '';
+  for(let i=1;i<=max;i++){
+    const pip = document.createElement('div');
+    pip.className = 'pip'+(i<round?' done':i===round?' active':'');
+    row.appendChild(pip);
+  }
+}
 </script>
 </body>
 </html>
