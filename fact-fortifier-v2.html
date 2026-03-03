@@ -696,7 +696,7 @@ h1 {
         <button class="act-btn btn-draw"   id="btn-draw"   onclick="drawCard()">→ Draw Card</button>
         <button class="act-btn btn-place"  id="btn-place"  onclick="choosePlaceCol()" disabled>↑ Place Block</button>
         <button class="act-btn btn-broken" id="btn-broken" onclick="markBroken()" disabled>✕ Mark as Broken</button>
-        <button class="act-btn btn-tape"   id="btn-tape"   onclick="startTape()" disabled>⊛ Fix Argument (Add Duct Tape)</button>
+        <button class="act-btn btn-tape"   id="btn-tape"   onclick="startTape()" disabled>⊛ Fix with a Duct Tape Rebuttal</button>
       </div>
 
       <div id="col-selector">
@@ -737,10 +737,26 @@ h1 {
 <div id="setup-screen">
   <div id="setup-box">
     <h2>🕵 Attacker Setup</h2>
-    <p>Player 2 (Attacker): secretly choose <strong>2–3 trick cards</strong> to plant in the deck. Player 1 will not see this screen. Choose arguments that sound convincing but are actually fallacious — the builder must place them to trigger the trap.</p>
+    <p>Player 2 (Attacker): secretly choose or write <strong>2–3 trick cards</strong> to plant in the deck. Pick from the suggestions below, regenerate ones you don't like, or write your own convincing-sounding fallacy.</p>
     <div class="trick-count-display">Selected: <span id="trick-selected-count">0</span> / max 3</div>
     <div id="trick-options"></div>
-    <button id="confirm-tricks" onclick="confirmTricks()" disabled>Plant Tricks →</button>
+    <button id="regen-btn" onclick="regenSuggestions()" style="margin-bottom:14px;padding:6px 14px;background:transparent;border:1px solid var(--muted);border-radius:3px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.65rem;letter-spacing:1px;cursor:pointer;">↻ Regenerate Unselected Suggestions</button>
+
+    <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:2px;">
+      <div style="font-family:'Syne Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">✍ WRITE YOUR OWN TRICK CARD</div>
+      <textarea id="custom-trick-text" placeholder="Write a convincing-sounding but fallacious argument here…" style="width:100%;min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.75rem;padding:8px;resize:vertical;line-height:1.5;margin-bottom:6px;"></textarea>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select id="custom-trick-type" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.75rem;padding:6px 8px;">
+          <option value="either-or">Either/Or Fallacy</option>
+          <option value="slippery-slope">Slippery Slope Fallacy</option>
+        </select>
+        <button onclick="addCustomTrick()" style="padding:6px 14px;background:transparent;border:1px solid var(--trick);border-radius:3px;color:var(--trick);font-family:'Syne Mono',monospace;font-size:0.65rem;letter-spacing:1px;cursor:pointer;white-space:nowrap;">+ Add Card</button>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <button id="confirm-tricks" onclick="confirmTricks()" disabled>Plant Tricks →</button>
+    </div>
   </div>
 </div>
 
@@ -790,13 +806,18 @@ const ARGUMENT_CARDS = [
   { id:17, type:'valid',          text:"Splitting into subgroups for this phase will let us work in parallel and save time overall." },
 ];
 
-// Trick cards — extra-convincing-sounding fallacies
+// Trick cards — extra-convincing-sounding fallacies (larger pool for regeneration)
 const TRICK_POOL = [
-  { id:'t1', text:"There really are only two viable approaches here: full commitment or stepping back entirely. Compromise will just water down both options." },
-  { id:'t2', text:"Letting this small disagreement go unresolved will inevitably erode trust until the team can no longer function together." },
-  { id:'t3', text:"If we don't adopt a single unified voice in this document, readers will sense the inconsistency and dismiss the whole thing." },
-  { id:'t4', text:"We have to choose: prioritize quality or meet the deadline. Trying to do both means failing at both." },
-  { id:'t5', text:"Once we open the door to scope changes, we'll never be able to close it — every stakeholder will keep adding requests." },
+  { id:'t1', type:'either-or',      text:"There really are only two viable approaches here: full commitment or stepping back entirely. Compromise will just water down both options." },
+  { id:'t2', type:'slippery-slope', text:"Letting this small disagreement go unresolved will inevitably erode trust until the team can no longer function together." },
+  { id:'t3', type:'slippery-slope', text:"If we don't adopt a single unified voice in this document, readers will sense the inconsistency and dismiss the whole thing." },
+  { id:'t4', type:'either-or',      text:"We have to choose: prioritize quality or meet the deadline. Trying to do both means failing at both." },
+  { id:'t5', type:'slippery-slope', text:"Once we open the door to scope changes, we'll never be able to close it — every stakeholder will keep adding requests." },
+  { id:'t6', type:'either-or',      text:"Either everyone agrees on this direction by end of day, or we should seriously consider whether this team can function at all." },
+  { id:'t7', type:'slippery-slope', text:"If we allow informal communication in the group chat, professionalism will erode and eventually no one will take the project seriously." },
+  { id:'t8', type:'either-or',      text:"We either follow the original plan exactly or we admit the whole proposal was poorly thought out from the start." },
+  { id:'t9', type:'slippery-slope', text:"Once we start making exceptions for late submissions, the whole grading system will become meaningless and no one will meet any deadlines." },
+  { id:'t10',type:'either-or',      text:"You can either support this decision fully or remove yourself from the decision-making process. Half-support isn't useful here." },
 ];
 
 // ═══════════════════════════════
@@ -804,25 +825,22 @@ const TRICK_POOL = [
 // ═══════════════════════════════
 
 let state = {};
+let shownTrickIds = [];
 
 function initState() {
   state = {
-    phase: 'setup',       // 'setup' | 'build' | 'gameover'
+    phase: 'setup',
     deck: [],
     currentCard: null,
-    pendingAction: null,  // 'place' | 'tape' | 'repair-tape'
+    pendingAction: null,
     pendingCol: null,
+    pendingRebuttal: null,
     selectedRepairIdx: null,
-
-    // 5 columns, each array holds up to 5 cells
-    // cell: { type:'solid'|'taped'|'broken', card, rebuttal? }
     columns: [[], [], [], [], []],
     collapsedCols: new Set(),
     repairPile: [],
-
-    tricksPlanted: [],    // card ids of trick cards in deck
+    tricksPlanted: [],
     tricksTriggered: 0,
-
     solidCount: 0,
     log: [],
   };
@@ -832,31 +850,93 @@ function initState() {
 // SETUP PHASE
 // ═══════════════════════════════
 
+// Tracks which pool IDs are currently shown (for regeneration)
+
 function startSetup() {
-  // Populate trick options
-  const container = document.getElementById('trick-options');
-  container.innerHTML = '';
-  TRICK_POOL.forEach(tc => {
-    const div = document.createElement('div');
-    div.className = 'trick-card-option';
-    div.textContent = tc.text;
-    div.dataset.id = tc.id;
-    div.onclick = () => toggleTrick(tc.id, div);
-    container.appendChild(div);
-  });
+  // Pick 5 random suggestions to show initially
+  shownTrickIds = shuffle([...TRICK_POOL]).slice(0, 5).map(t => t.id);
+  renderTrickOptions();
   document.getElementById('setup-screen').classList.add('visible');
 }
 
+function renderTrickOptions() {
+  const container = document.getElementById('trick-options');
+  container.innerHTML = '';
+  shownTrickIds.forEach(id => {
+    const tc = TRICK_POOL.find(t => t.id === id);
+    if (!tc) return;
+    const isSelected = state.tricksPlanted.some(p => p.id === id);
+    const div = document.createElement('div');
+    div.className = 'trick-card-option' + (isSelected ? ' selected' : '');
+    div.innerHTML = `<div style="font-size:0.55rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:3px;">${tc.type === 'either-or' ? 'Either/Or Fallacy' : 'Slippery Slope Fallacy'}</div>${tc.text}`;
+    div.dataset.id = id;
+    div.onclick = () => toggleTrick(id, div);
+    container.appendChild(div);
+  });
+}
+
+function regenSuggestions() {
+  // Keep selected ones, replace unselected with fresh picks from pool
+  const selectedIds = state.tricksPlanted.map(p => p.id).filter(id => id.startsWith('t') && !id.startsWith('tc'));
+  const usedIds = new Set([...shownTrickIds]);
+  const available = TRICK_POOL.filter(t => !usedIds.has(t.id) || selectedIds.includes(t.id));
+
+  // Rebuild shown list: keep selected + fill rest from unused pool
+  const freshPool = shuffle(TRICK_POOL.filter(t => !selectedIds.includes(t.id)));
+  const newShown = [...selectedIds];
+  for (const t of freshPool) {
+    if (newShown.length >= 5) break;
+    if (!newShown.includes(t.id)) newShown.push(t.id);
+  }
+  // If pool exhausted, cycle back
+  if (newShown.filter(id => !selectedIds.includes(id)).length === 0) {
+    const allIds = TRICK_POOL.map(t => t.id).filter(id => !selectedIds.includes(id));
+    shuffle(allIds).slice(0, 5 - selectedIds.length).forEach(id => newShown.push(id));
+  }
+  shownTrickIds = newShown.slice(0, 5);
+  renderTrickOptions();
+}
+
 function toggleTrick(id, el) {
-  const idx = state.tricksPlanted.indexOf(id);
+  const idx = state.tricksPlanted.findIndex(p => p.id === id);
   if (idx >= 0) {
     state.tricksPlanted.splice(idx, 1);
     el.classList.remove('selected');
   } else {
     if (state.tricksPlanted.length >= 3) return;
-    state.tricksPlanted.push(id);
+    const tc = TRICK_POOL.find(t => t.id === id);
+    if (tc) state.tricksPlanted.push({ id: tc.id, text: tc.text, type: tc.type });
     el.classList.add('selected');
   }
+  document.getElementById('trick-selected-count').textContent = state.tricksPlanted.length;
+  document.getElementById('confirm-tricks').disabled = state.tricksPlanted.length < 2;
+}
+
+function addCustomTrick() {
+  const text = document.getElementById('custom-trick-text').value.trim();
+  const type = document.getElementById('custom-trick-type').value;
+  if (text.length < 10) {
+    document.getElementById('custom-trick-text').style.borderColor = 'var(--red)';
+    return;
+  }
+  if (state.tricksPlanted.length >= 3) {
+    document.getElementById('custom-trick-text').style.borderColor = 'var(--red)';
+    document.getElementById('custom-trick-text').placeholder = 'Max 3 tricks already selected!';
+    return;
+  }
+  document.getElementById('custom-trick-text').style.borderColor = 'var(--border)';
+  const customId = 'tc_' + Date.now();
+  const customCard = { id: customId, text, type, isCustom: true };
+
+  // Add to trick pool temporarily and to planted list
+  TRICK_POOL.push(customCard);
+  state.tricksPlanted.push(customCard);
+
+  // Show it in the options
+  shownTrickIds.push(customId);
+  renderTrickOptions();
+
+  document.getElementById('custom-trick-text').value = '';
   document.getElementById('trick-selected-count').textContent = state.tricksPlanted.length;
   document.getElementById('confirm-tricks').disabled = state.tricksPlanted.length < 2;
 }
@@ -865,9 +945,7 @@ function confirmTricks() {
   document.getElementById('setup-screen').classList.remove('visible');
 
   // Build deck: regular cards + selected trick cards, shuffled
-  const trickCards = TRICK_POOL
-    .filter(tc => state.tricksPlanted.includes(tc.id))
-    .map(tc => ({ ...tc, isTrick: true }));
+  const trickCards = state.tricksPlanted.map(tc => ({ ...tc, isTrick: true }));
   state.deck = shuffle([...ARGUMENT_CARDS, ...trickCards]);
 
   // Show pass screen
@@ -1017,7 +1095,7 @@ function drawCard() {
   const cardEl = document.getElementById('card-text');
   cardEl.className = '';
   cardEl.textContent = state.currentCard.text;
-  setFeedback('Choose an action: place it, mark it broken, or fix / duct tape it with a rebuttal.', 'fb-neutral');
+  setFeedback('Choose an action: place it, mark it broken, or duct tape it with a rebuttal.', 'fb-neutral');
   setPhaseBanner('BUILDER\'S TURN — choose an action', 'banner-build');
 }
 
@@ -1459,6 +1537,8 @@ window.startRepairTape = startRepairTape;
 window.confirmTricks = confirmTricks;
 window.dismissPass = dismissPass;
 window.restartGame = restartGame;
+window.regenSuggestions = regenSuggestions;
+window.addCustomTrick = addCustomTrick;
 
 // ═══════════════════════════════
 // BOOT
