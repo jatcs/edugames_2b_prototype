@@ -760,6 +760,10 @@ h1 {
 <!-- DIFFICULTY SCREEN -->
 <div id="difficulty-screen" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);align-items:center;justify-content:center;z-index:60;">
   <div style="background:var(--surface);border:1px solid var(--gold);border-radius:8px;padding:32px 36px;max-width:460px;width:90%;text-align:center;">
+    <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+      <div style="font-family:'Syne Mono',monospace;font-size:1.8rem;letter-spacing:6px;color:var(--gold);text-transform:uppercase;">Fact Fortifier</div>
+      <div style="font-size:0.7rem;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:4px;">build your tower · spot the traps · rebut the fallacies</div>
+    </div>
     <h2 style="font-family:'Syne Mono',monospace;font-size:1rem;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">🏗 Select Difficulty</h2>
     <p style="font-size:0.75rem;color:var(--muted);margin-bottom:24px;line-height:1.6;">Player 1 — choose how many trick cards the attacker can plant. More tricks means more traps hidden in the deck.</p>
     <div style="display:flex;flex-direction:column;gap:10px;">
@@ -783,11 +787,11 @@ h1 {
       <h2>🕵 Attacker Setup</h2>
       <p>Player 2 (Attacker): secretly choose or write <strong>up to <span id="setup-intro-count">3</span> trick cards</strong> to plant in the deck. Pick from the suggestions below, regenerate ones you don't like, or write your own convincing-sounding fallacy.</p>
       <div class="trick-count-display">Selected: <span id="trick-selected-count">0</span> / max <span id="setup-max-count">3</span></div>
+      <button id="regen-btn" onclick="regenSuggestions()" style="margin-top:6px;padding:6px 14px;background:transparent;border:1px solid var(--muted);border-radius:3px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.65rem;letter-spacing:1px;cursor:pointer;">↻ Regenerate Unselected Suggestions</button>
     </div>
 
     <div id="setup-box-scroll">
       <div id="trick-options"></div>
-      <button id="regen-btn" onclick="regenSuggestions()" style="margin-bottom:10px;padding:6px 14px;background:transparent;border:1px solid var(--muted);border-radius:3px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.65rem;letter-spacing:1px;cursor:pointer;">↻ Regenerate Unselected Suggestions</button>
     </div>
 
     <div id="setup-box-footer">
