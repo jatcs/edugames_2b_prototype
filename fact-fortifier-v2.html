@@ -758,25 +758,50 @@ h1 {
 
 <!-- ATTACKER SETUP -->
 <!-- DIFFICULTY SCREEN -->
-<div id="difficulty-screen" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);align-items:center;justify-content:center;z-index:60;">
+<div id="difficulty-screen" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);align-items:center;justify-content:center;z-index:60;overflow-y:auto;padding:16px;">
   <div style="background:var(--surface);border:1px solid var(--gold);border-radius:8px;padding:32px 36px;max-width:460px;width:90%;text-align:center;">
+
+    <!-- Title banner -->
     <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);">
       <div style="font-family:'Syne Mono',monospace;font-size:1.8rem;letter-spacing:6px;color:var(--gold);text-transform:uppercase;">Fact Fortifier</div>
       <div style="font-size:0.7rem;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:4px;">build your tower · spot the traps · rebut the fallacies</div>
     </div>
-    <h2 style="font-family:'Syne Mono',monospace;font-size:1rem;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">🏗 Select Difficulty</h2>
-    <p style="font-size:0.75rem;color:var(--muted);margin-bottom:24px;line-height:1.6;">Player 1 — choose how many trick cards the attacker can plant. More tricks means more traps hidden in the deck.</p>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <button onclick="selectDifficulty('easy')" class="diff-btn" style="padding:14px 16px;background:transparent;border:1px solid var(--green);border-radius:4px;color:var(--green);font-family:'Syne Mono',monospace;font-size:0.75rem;letter-spacing:2px;cursor:pointer;text-align:left;transition:background 0.15s;">
-        <span style="font-size:1rem;">🟢</span> &nbsp;EASY &nbsp;<span style="color:var(--muted);font-size:0.65rem;">— attacker plants 3 trick cards</span>
+
+    <!-- Player mode -->
+    <h2 style="font-family:'Syne Mono',monospace;font-size:0.8rem;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;">👥 Players</h2>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">
+      <button id="mode-btn-single" onclick="selectPlayerMode('single')"
+        style="padding:12px 16px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.68rem;letter-spacing:1px;cursor:pointer;text-align:left;transition:all 0.15s;">
+        🤖 &nbsp;Single Player <span style="font-weight:300;opacity:0.7;">(AI opponent)</span>
       </button>
-      <button onclick="selectDifficulty('medium')" class="diff-btn" style="padding:14px 16px;background:transparent;border:1px solid var(--gold);border-radius:4px;color:var(--gold);font-family:'Syne Mono',monospace;font-size:0.75rem;letter-spacing:2px;cursor:pointer;text-align:left;transition:background 0.15s;">
-        <span style="font-size:1rem;">🟡</span> &nbsp;MEDIUM &nbsp;<span style="color:var(--muted);font-size:0.65rem;">— attacker plants 9 trick cards</span>
-      </button>
-      <button onclick="selectDifficulty('hard')" class="diff-btn" style="padding:14px 16px;background:transparent;border:1px solid var(--red);border-radius:4px;color:var(--red);font-family:'Syne Mono',monospace;font-size:0.75rem;letter-spacing:2px;cursor:pointer;text-align:left;transition:background 0.15s;">
-        <span style="font-size:1rem;">🔴</span> &nbsp;HARD &nbsp;<span style="color:var(--muted);font-size:0.65rem;">— attacker plants 15 trick cards</span>
+      <button id="mode-btn-two" onclick="selectPlayerMode('two')"
+        style="padding:12px 16px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.68rem;letter-spacing:1px;cursor:pointer;text-align:left;transition:all 0.15s;">
+        🧑‍🤝‍🧑 &nbsp;Two Players <span style="font-weight:300;opacity:0.7;">(pass the computer with Player 2)</span>
       </button>
     </div>
+
+    <!-- Difficulty -->
+    <h2 style="font-family:'Syne Mono',monospace;font-size:0.8rem;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">🏗 Difficulty</h2>
+    <p style="font-size:0.72rem;color:var(--muted);margin-bottom:14px;line-height:1.6;" id="diff-subtext">Choose how many trick cards will be hidden in the deck.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+      <button id="diff-btn-easy" onclick="selectDifficultyLevel('easy')"
+        style="padding:14px 16px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.75rem;letter-spacing:2px;cursor:pointer;text-align:left;transition:all 0.15s;">
+        🟢 &nbsp;EASY &nbsp;<span style="font-size:0.65rem;opacity:0.7;">— 3 trick cards</span>
+      </button>
+      <button id="diff-btn-medium" onclick="selectDifficultyLevel('medium')"
+        style="padding:14px 16px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.75rem;letter-spacing:2px;cursor:pointer;text-align:left;transition:all 0.15s;">
+        🟡 &nbsp;MEDIUM &nbsp;<span style="font-size:0.65rem;opacity:0.7;">— 9 trick cards</span>
+      </button>
+      <button id="diff-btn-hard" onclick="selectDifficultyLevel('hard')"
+        style="padding:14px 16px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.75rem;letter-spacing:2px;cursor:pointer;text-align:left;transition:all 0.15s;">
+        🔴 &nbsp;HARD &nbsp;<span style="font-size:0.65rem;opacity:0.7;">— 15 trick cards</span>
+      </button>
+    </div>
+
+    <button id="start-game-btn" onclick="confirmDifficultyAndMode()" disabled
+      style="padding:12px 28px;background:transparent;border:1px solid var(--gold);border-radius:3px;color:var(--gold);font-family:'Syne Mono',monospace;font-size:0.7rem;letter-spacing:2px;cursor:pointer;text-transform:uppercase;opacity:0.3;transition:all 0.15s;">
+      Start Game →
+    </button>
   </div>
 </div>
 
@@ -942,7 +967,8 @@ let shownTrickIds = [];
 function initState() {
   state = {
     phase: 'setup',
-    difficulty: 'easy',   // 'easy' | 'medium' | 'hard'
+    playerMode: null,     // 'single' | 'two'
+    difficulty: null,
     trickLimit: 3,        // max tricks attacker can plant
     deck: [],
     currentCard: null,
@@ -966,19 +992,71 @@ function initState() {
 
 // Tracks which pool IDs are currently shown (for regeneration)
 
-function selectDifficulty(level) {
+function selectPlayerMode(mode) {
+  state.playerMode = mode;
+  // Highlight selected mode button
+  ['single','two'].forEach(m => {
+    const btn = document.getElementById(`mode-btn-${m}`);
+    const isSelected = m === mode;
+    btn.style.borderColor = isSelected ? 'var(--blue)' : 'var(--border)';
+    btn.style.color = isSelected ? 'var(--blue)' : 'var(--muted)';
+    btn.style.background = isSelected ? 'rgba(74,158,202,0.08)' : 'transparent';
+  });
+  updateStartBtn();
+}
+
+function selectDifficultyLevel(level) {
   const limits = { easy: 3, medium: 9, hard: 15 };
+  const colors = { easy: 'var(--green)', medium: 'var(--gold)', hard: 'var(--red)' };
   state.difficulty = level;
   state.trickLimit = limits[level];
+  // Highlight selected difficulty button
+  ['easy','medium','hard'].forEach(d => {
+    const btn = document.getElementById(`diff-btn-${d}`);
+    const isSelected = d === level;
+    btn.style.borderColor = isSelected ? colors[d] : 'var(--border)';
+    btn.style.color = isSelected ? colors[d] : 'var(--muted)';
+    btn.style.background = isSelected ? 'transparent' : 'transparent';
+  });
+  updateStartBtn();
+}
+
+function updateStartBtn() {
+  const ready = state.playerMode && state.difficulty;
+  const btn = document.getElementById('start-game-btn');
+  btn.disabled = !ready;
+  btn.style.opacity = ready ? '1' : '0.3';
+  btn.style.cursor = ready ? 'pointer' : 'not-allowed';
+}
+
+function confirmDifficultyAndMode() {
+  if (!state.playerMode || !state.difficulty) return;
   document.getElementById('difficulty-screen').style.display = 'none';
 
-  // Pass device to attacker
-  document.getElementById('pass-title').textContent = 'Pass the Device';
-  document.getElementById('pass-body').textContent = `Difficulty set to ${level.toUpperCase()} (${state.trickLimit} trick cards). Hand the device to Player 2 (Attacker) — don't let them see this screen.`;
-  document.getElementById('pass-screen').classList.add('visible');
-  // When pass is dismissed, show attacker setup
-  state._afterPass = 'setup';
+  if (state.playerMode === 'single') {
+    // Auto-select tricks from difficulty-appropriate pool, fully hidden
+    const pool = getTrickPool();
+    const chosen = shuffle([...pool]).slice(0, state.trickLimit);
+    state.tricksPlanted = chosen.map(tc => ({ ...tc }));
+    state.deck = shuffle([...ARGUMENT_CARDS, ...state.tricksPlanted.map(tc => ({ ...tc, isTrick: true }))]);
+    // Go straight to game — no pass screen needed
+    state.phase = 'build';
+    buildGrid();
+    updateDeckCount();
+    setFeedback('Draw your first card to begin building.', 'fb-neutral');
+    setPhaseBanner('BUILDER\'S TURN — draw a card', 'banner-build');
+    addLog('Single player game started.', '');
+  } else {
+    // Two player: pass to attacker for trick selection
+    document.getElementById('pass-title').textContent = 'Pass the Device';
+    document.getElementById('pass-body').textContent = `Difficulty set to ${state.difficulty.toUpperCase()}. Hand the device to Player 2 (Attacker) — don't let them see this screen.`;
+    document.getElementById('pass-screen').classList.add('visible');
+    state._afterPass = 'setup';
+  }
 }
+
+// Keep old name as alias so restartGame still works
+function selectDifficulty(level) { selectDifficultyLevel(level); }
 
 function startSetup() {
   // Update setup screen text to reflect trick limit
@@ -1695,6 +1773,9 @@ window.dismissPass = dismissPass;
 window.restartGame = restartGame;
 window.regenSuggestions = regenSuggestions;
 window.addCustomTrick = addCustomTrick;
+window.selectPlayerMode = selectPlayerMode;
+window.selectDifficultyLevel = selectDifficultyLevel;
+window.confirmDifficultyAndMode = confirmDifficultyAndMode;
 window.selectDifficulty = selectDifficulty;
 
 // ═══════════════════════════════
