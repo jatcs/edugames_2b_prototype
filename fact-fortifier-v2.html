@@ -787,12 +787,14 @@ h1 {
 
     <div id="setup-box-scroll">
       <div id="trick-options"></div>
-      <button id="regen-btn" onclick="regenSuggestions()" style="margin-bottom:14px;padding:6px 14px;background:transparent;border:1px solid var(--muted);border-radius:3px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.65rem;letter-spacing:1px;cursor:pointer;">↻ Regenerate Unselected Suggestions</button>
+      <button id="regen-btn" onclick="regenSuggestions()" style="margin-bottom:10px;padding:6px 14px;background:transparent;border:1px solid var(--muted);border-radius:3px;color:var(--muted);font-family:'Syne Mono',monospace;font-size:0.65rem;letter-spacing:1px;cursor:pointer;">↻ Regenerate Unselected Suggestions</button>
+    </div>
 
-      <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:2px;margin-bottom:14px;">
+    <div id="setup-box-footer">
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:12px;">
         <div style="font-family:'Syne Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">✍ WRITE YOUR OWN TRICK CARD</div>
         <textarea id="custom-trick-text" placeholder="Write a convincing-sounding but fallacious argument here…" style="width:100%;min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.75rem;padding:8px;resize:vertical;line-height:1.5;margin-bottom:6px;"></textarea>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
           <select id="custom-trick-type" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.75rem;padding:6px 8px;">
             <option value="either-or">Either/Or Fallacy</option>
             <option value="slippery-slope">Slippery Slope Fallacy</option>
@@ -800,9 +802,6 @@ h1 {
           <button onclick="addCustomTrick()" style="padding:6px 14px;background:transparent;border:1px solid var(--trick);border-radius:3px;color:var(--trick);font-family:'Syne Mono',monospace;font-size:0.65rem;letter-spacing:1px;cursor:pointer;white-space:nowrap;">+ Add Card</button>
         </div>
       </div>
-    </div>
-
-    <div id="setup-box-footer">
       <button id="confirm-tricks" onclick="confirmTricks()" disabled>Plant Tricks →</button>
     </div>
 
