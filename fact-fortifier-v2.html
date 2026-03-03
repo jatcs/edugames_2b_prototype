@@ -876,23 +876,34 @@ function renderTrickOptions() {
 }
 
 function regenSuggestions() {
-  // Keep selected ones, replace unselected with fresh picks from pool
-  const selectedIds = state.tricksPlanted.map(p => p.id).filter(id => id.startsWith('t') && !id.startsWith('tc'));
-  const usedIds = new Set([...shownTrickIds]);
-  const available = TRICK_POOL.filter(t => !usedIds.has(t.id) || selectedIds.includes(t.id));
+  // All currently planted IDs (built-in or custom) must be preserved
+  const plantedIds = new Set(state.tricksPlanted.map(p => p.id));
 
-  // Rebuild shown list: keep selected + fill rest from unused pool
-  const freshPool = shuffle(TRICK_POOL.filter(t => !selectedIds.includes(t.id)));
-  const newShown = [...selectedIds];
-  for (const t of freshPool) {
+  // Built-in pool only (never regenerate into custom cards)
+  const builtInPool = TRICK_POOL.filter(t => !t.isCustom);
+
+  // IDs already shown that are NOT planted — these are the ones to replace
+  const shownUnselected = shownTrickIds.filter(id => !plantedIds.has(id));
+
+  // Built-in IDs not currently shown at all (fresh candidates)
+  const notYetShown = builtInPool
+    .map(t => t.id)
+    .filter(id => !shownTrickIds.includes(id));
+
+  // Shuffle fresh candidates; fall back to cycling already-shown unselected if pool exhausted
+  const candidates = shuffle([...notYetShown]);
+  if (candidates.length === 0) {
+    // All built-in cards have been shown — cycle through them again (excluding planted)
+    candidates.push(...shuffle(builtInPool.map(t => t.id).filter(id => !plantedIds.has(id))));
+  }
+
+  // Replace unselected shown slots with fresh candidates
+  const newShown = shownTrickIds.filter(id => plantedIds.has(id)); // always keep planted
+  for (const candidate of candidates) {
     if (newShown.length >= 5) break;
-    if (!newShown.includes(t.id)) newShown.push(t.id);
+    if (!newShown.includes(candidate)) newShown.push(candidate);
   }
-  // If pool exhausted, cycle back
-  if (newShown.filter(id => !selectedIds.includes(id)).length === 0) {
-    const allIds = TRICK_POOL.map(t => t.id).filter(id => !selectedIds.includes(id));
-    shuffle(allIds).slice(0, 5 - selectedIds.length).forEach(id => newShown.push(id));
-  }
+
   shownTrickIds = newShown.slice(0, 5);
   renderTrickOptions();
 }
