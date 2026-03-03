@@ -854,27 +854,79 @@ const ARGUMENT_CARDS = [
   { id:17, type:'valid',          text:"Splitting into subgroups for this phase will let us work in parallel and save time overall." },
 ];
 
-// Trick cards — pool of 18 so hard mode (15) always has suggestions + extras to regenerate
-const TRICK_POOL = [
-  { id:'t1',  type:'either-or',      text:"There really are only two viable approaches here: full commitment or stepping back entirely. Compromise will just water down both options." },
-  { id:'t2',  type:'slippery-slope', text:"Letting this small disagreement go unresolved will inevitably erode trust until the team can no longer function together." },
-  { id:'t3',  type:'slippery-slope', text:"If we don't adopt a single unified voice in this document, readers will sense the inconsistency and dismiss the whole thing." },
-  { id:'t4',  type:'either-or',      text:"We have to choose: prioritize quality or meet the deadline. Trying to do both means failing at both." },
-  { id:'t5',  type:'slippery-slope', text:"Once we open the door to scope changes, we'll never be able to close it — every stakeholder will keep adding requests." },
-  { id:'t6',  type:'either-or',      text:"Either everyone agrees on this direction by end of day, or we should seriously consider whether this team can function at all." },
-  { id:'t7',  type:'slippery-slope', text:"If we allow informal communication in the group chat, professionalism will erode and eventually no one will take the project seriously." },
-  { id:'t8',  type:'either-or',      text:"We either follow the original plan exactly or we admit the whole proposal was poorly thought out from the start." },
-  { id:'t9',  type:'slippery-slope', text:"Once we start making exceptions for late submissions, the whole grading system will become meaningless and no one will meet any deadlines." },
-  { id:'t10', type:'either-or',      text:"You can either support this decision fully or remove yourself from the decision-making process. Half-support isn't useful here." },
-  { id:'t11', type:'slippery-slope', text:"If we let anyone present their section out of order, the whole presentation will lose coherence and the audience will tune out entirely." },
-  { id:'t12', type:'either-or',      text:"Either we finalize the methodology today or we'll have to scrap the entire research phase and start over." },
-  { id:'t13', type:'slippery-slope', text:"Allowing one person to use a different citation style will cause the document to look inconsistent and reviewers will reject it outright." },
-  { id:'t14', type:'either-or',      text:"We can either keep this collaboration strictly professional or admit that the team dynamics will never work." },
-  { id:'t15', type:'slippery-slope', text:"If we don't address this minor formatting issue now, the whole document will look unprofessional and we'll lose all credibility." },
-  { id:'t16', type:'either-or',      text:"You're either fully committed to this project timeline or you're not really a team player — there's no in-between." },
-  { id:'t17', type:'slippery-slope', text:"Once we allow the scope to shift even slightly, project creep will take over and we'll never deliver anything on time." },
-  { id:'t18', type:'either-or',      text:"We either present all our findings or we might as well have done no research at all — partial results aren't worth sharing." },
+// Trick cards split by difficulty tier
+// EASY: obvious tells — "either/or", "only two", "if...then", "inevitably", "never"
+// MEDIUM: fewer blunt tells, more plausible-sounding
+// HARD: no giveaway words, disguised as reasonable-sounding reasoning
+
+const TRICK_POOL_EASY = [
+  { id:'e1',  type:'either-or',      text:"You're either with our team on this approach or you're against the whole project. There's no middle ground." },
+  { id:'e2',  type:'either-or',      text:"Either we go with this design or we'll end up with a terrible product — those are the only two possible outcomes." },
+  { id:'e3',  type:'either-or',      text:"If you don't agree with everything in the proposal, you must want the project to fail." },
+  { id:'e4',  type:'either-or',      text:"We either launch on the original date or this whole collaboration was a waste of everyone's time." },
+  { id:'e5',  type:'either-or',      text:"Either everyone fully agrees on this direction or we should seriously consider whether this team can function at all." },
+  { id:'e6',  type:'either-or',      text:"You can either support this decision fully or remove yourself from the process — there's no in-between." },
+  { id:'e7',  type:'either-or',      text:"We either follow the original plan exactly or we must admit the whole proposal was poorly thought out." },
+  { id:'e8',  type:'either-or',      text:"Either we present all our findings or we might as well have done no research — partial results aren't worth sharing." },
+  { id:'e9',  type:'slippery-slope', text:"If we let one team member miss a deadline, soon everyone will start skipping deadlines and the whole project will inevitably fall apart." },
+  { id:'e10', type:'slippery-slope', text:"If we change our research question now, we'll end up changing everything and we'll never finish at all." },
+  { id:'e11', type:'slippery-slope', text:"If we allow any group member to work remotely, eventually no one will ever want to meet in person and we'll lose all cohesion." },
+  { id:'e12', type:'slippery-slope', text:"Once we open the door to scope changes, we'll never be able to close it — every stakeholder will inevitably keep adding requests." },
+  { id:'e13', type:'slippery-slope', text:"If we allow informal messages in the group chat, professionalism will inevitably erode and no one will take the project seriously." },
+  { id:'e14', type:'slippery-slope', text:"Once we start making exceptions for late submissions, the whole system will become meaningless and no one will ever meet any deadlines." },
+  { id:'e15', type:'slippery-slope', text:"If we don't address this formatting issue now, the whole document will look unprofessional and we'll never recover our credibility." },
+  { id:'e16', type:'slippery-slope', text:"If we let anyone present out of order, the presentation will lose all coherence and the audience will inevitably tune out entirely." },
+  { id:'e17', type:'either-or',      text:"We have to choose: prioritize quality or meet the deadline — trying to do both means failing at both." },
+  { id:'e18', type:'slippery-slope', text:"Once we allow the scope to shift even slightly, project creep will take over and we'll never deliver anything on time." },
 ];
+
+const TRICK_POOL_MEDIUM = [
+  { id:'m1',  type:'either-or',      text:"There are really only two viable approaches here: full commitment or stepping back entirely. Compromise will just water down both options." },
+  { id:'m2',  type:'slippery-slope', text:"Letting this disagreement go unresolved will erode trust until the team can no longer function together effectively." },
+  { id:'m3',  type:'slippery-slope', text:"Without a single unified voice in this document, readers will sense the inconsistency and dismiss the whole thing." },
+  { id:'m4',  type:'either-or',      text:"We have to choose between quality and meeting the deadline — trying to do both is a recipe for achieving neither." },
+  { id:'m5',  type:'slippery-slope', text:"Once we open the door to scope changes, every stakeholder will keep adding requests and the project will lose focus." },
+  { id:'m6',  type:'either-or',      text:"At this point, full team alignment or stepping back are the only real options — partial buy-in will undermine everything." },
+  { id:'m7',  type:'slippery-slope', text:"Allowing informal communication will gradually erode the professional standards we've set for this project." },
+  { id:'m8',  type:'either-or',      text:"Sticking to the original plan or admitting the proposal needs a full rethink — those are the choices we're actually facing." },
+  { id:'m9',  type:'slippery-slope', text:"Making exceptions on late submissions now will undermine accountability across the whole team going forward." },
+  { id:'m10', type:'either-or',      text:"Full commitment to this direction or stepping aside — anything less will slow the whole team down." },
+  { id:'m11', type:'slippery-slope', text:"Presenting sections out of order will confuse the narrative and cause the audience to lose confidence in the work." },
+  { id:'m12', type:'either-or',      text:"We need to finalize the methodology today or reconsider the entire research phase — there's no workable middle option." },
+  { id:'m13', type:'slippery-slope', text:"Allowing one person to use a different citation style will create inconsistencies that undermine the document's credibility." },
+  { id:'m14', type:'either-or',      text:"A strictly professional collaboration or acknowledging the team dynamics won't support this project — those are the realistic options." },
+  { id:'m15', type:'slippery-slope', text:"Leaving this minor formatting inconsistency unaddressed will signal carelessness throughout the rest of the document." },
+  { id:'m16', type:'either-or',      text:"Full commitment to the timeline or honest acknowledgment that you can't deliver — anything in between sets the team up to fail." },
+  { id:'m17', type:'slippery-slope', text:"Allowing even a small scope shift opens up a pattern of changes that will compound and delay delivery." },
+  { id:'m18', type:'either-or',      text:"Presenting complete findings or not presenting at all — sharing partial results will raise more questions than it answers." },
+];
+
+const TRICK_POOL_HARD = [
+  { id:'h1',  type:'either-or',      text:"Given the constraints we're working under, committing fully or stepping back entirely are the two paths that actually make sense here." },
+  { id:'h2',  type:'slippery-slope', text:"A disagreement like this, left unaddressed, tends to shape how the group communicates long after the immediate issue is resolved." },
+  { id:'h3',  type:'slippery-slope', text:"When documents lack a consistent voice, readers notice — and that perception colors how they receive the argument as a whole." },
+  { id:'h4',  type:'either-or',      text:"Realistically, quality and speed are pulling in opposite directions here — optimizing for both tends to mean getting neither right." },
+  { id:'h5',  type:'slippery-slope', text:"Scope adjustments, once accepted as normal, tend to keep coming — each one reasonable in isolation, but collectively shifting the project." },
+  { id:'h6',  type:'either-or',      text:"The practical options here are full alignment or a serious conversation about whether this direction is right — incremental buy-in won't hold." },
+  { id:'h7',  type:'slippery-slope', text:"Relaxing communication standards in small ways tends to shift the overall tone of collaboration over time." },
+  { id:'h8',  type:'either-or',      text:"Staying with the original plan or doing a genuine reassessment are the two positions that lead somewhere — splitting the difference usually leads nowhere." },
+  { id:'h9',  type:'slippery-slope', text:"Flexibility on one submission deadline sets a precedent that changes how the whole team calibrates its own accountability." },
+  { id:'h10', type:'either-or',      text:"At this stage, strong commitment or an honest step back are what the project actually needs — partial engagement tends to create drag." },
+  { id:'h11', type:'slippery-slope', text:"Disrupting the presentation order — even once — shifts audience expectations and makes the overall structure harder to follow." },
+  { id:'h12', type:'either-or',      text:"Locking in the methodology now or revisiting the research design are the two directions worth taking seriously at this point." },
+  { id:'h13', type:'slippery-slope', text:"A single citation style deviation signals to reviewers that the document wasn't carefully coordinated, which affects how they read the rest of it." },
+  { id:'h14', type:'either-or',      text:"A fully professional working dynamic or an honest conversation about fit — those are the two framings that lead to a real answer here." },
+  { id:'h15', type:'slippery-slope', text:"Small inconsistencies in formatting tend to accumulate in the reader's mind, gradually undermining confidence in the work's rigor." },
+  { id:'h16', type:'either-or',      text:"Genuine commitment to the schedule or a frank conversation about capacity — those are the options that actually move things forward." },
+  { id:'h17', type:'slippery-slope', text:"Small adjustments to scope, each one sensible on its own, tend to collectively reframe what the project is actually trying to deliver." },
+  { id:'h18', type:'either-or',      text:"Presenting the full picture or holding off entirely are the two choices that preserve the work's integrity — partial disclosure usually backfires." },
+];
+
+function getTrickPool() {
+  const base = { easy: TRICK_POOL_EASY, medium: TRICK_POOL_MEDIUM, hard: TRICK_POOL_HARD };
+  // Return pool for current difficulty, filtering out custom cards already added
+  return (base[state.difficulty] || TRICK_POOL_EASY).filter(t => !t.isCustom);
+}
 
 // ═══════════════════════════════
 // STATE
@@ -932,23 +984,32 @@ function startSetup() {
   document.getElementById('confirm-tricks').disabled = true;
   state.tricksPlanted = [];
 
-  // Show exactly trickLimit suggestions (all built-in, shuffled)
-  const builtIn = TRICK_POOL.filter(t => !t.isCustom);
+  // Show exactly trickLimit suggestions from the difficulty-appropriate pool
+  const builtIn = getTrickPool();
   shownTrickIds = shuffle([...builtIn]).slice(0, state.trickLimit).map(t => t.id);
   renderTrickOptions();
   document.getElementById('setup-screen').classList.add('visible');
+}
+
+// Find a trick card by id across all pools and any custom cards
+function findTrickById(id) {
+  const allPools = [...TRICK_POOL_EASY, ...TRICK_POOL_MEDIUM, ...TRICK_POOL_HARD];
+  return allPools.find(t => t.id === id)
+    || state.tricksPlanted.find(p => p.id === id && p.isCustom)
+    || shownTrickIds.includes(id) && state.tricksPlanted.find(p => p.id === id)
+    || null;
 }
 
 function renderTrickOptions() {
   const container = document.getElementById('trick-options');
   container.innerHTML = '';
   shownTrickIds.forEach(id => {
-    const tc = TRICK_POOL.find(t => t.id === id);
+    const tc = findTrickById(id);
     if (!tc) return;
     const isSelected = state.tricksPlanted.some(p => p.id === id);
     const div = document.createElement('div');
     div.className = 'trick-card-option' + (isSelected ? ' selected' : '');
-    div.innerHTML = `<div style="font-size:0.55rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:3px;">${tc.type === 'either-or' ? 'Either/Or Fallacy' : 'Slippery Slope Fallacy'}</div>${tc.text}`;
+    div.innerHTML = `<div style="font-size:0.55rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:3px;">${tc.type === 'either-or' ? 'Either/Or Fallacy' : 'Slippery Slope Fallacy'}${tc.isCustom ? ' · custom' : ''}</div>${tc.text}`;
     div.dataset.id = id;
     div.onclick = () => toggleTrick(id, div);
     container.appendChild(div);
@@ -959,8 +1020,8 @@ function regenSuggestions() {
   // All currently planted IDs (built-in or custom) must be preserved
   const plantedIds = new Set(state.tricksPlanted.map(p => p.id));
 
-  // Built-in pool only (never regenerate into custom cards)
-  const builtInPool = TRICK_POOL.filter(t => !t.isCustom);
+  // Built-in pool only for this difficulty (never regenerate into custom cards)
+  const builtInPool = getTrickPool();
   const slotCount = state.trickLimit;
 
   // Built-in IDs not currently shown — fresh candidates
@@ -993,7 +1054,7 @@ function toggleTrick(id, el) {
     el.classList.remove('selected');
   } else {
   if (state.tricksPlanted.length >= state.trickLimit) return;
-    const tc = TRICK_POOL.find(t => t.id === id);
+    const tc = findTrickById(id);
     if (tc) state.tricksPlanted.push({ id: tc.id, text: tc.text, type: tc.type });
     el.classList.add('selected');
   }
@@ -1017,11 +1078,8 @@ function addCustomTrick() {
   const customId = 'tc_' + Date.now();
   const customCard = { id: customId, text, type, isCustom: true };
 
-  // Add to trick pool temporarily and to planted list
-  TRICK_POOL.push(customCard);
+  // Custom cards live only in tricksPlanted and shownTrickIds (no global pool needed)
   state.tricksPlanted.push(customCard);
-
-  // Show it in the options
   shownTrickIds.push(customId);
   renderTrickOptions();
 
